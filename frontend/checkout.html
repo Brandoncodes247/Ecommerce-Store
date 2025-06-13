@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Checkout</h1>
+    <nav>
+      <a href="index.html">Home</a>
+      <a href="cart.html">Cart</a>
+    </nav>
+  </header>
+  <main>
+    <section class="checkout-summary" id="checkout-summary">
+    </section>
+    <form id="checkout-form">
+      <h2>Customer Details</h2>
+      <label>Name: <input type="text" name="name" required></label>
+      <label>Email: <input type="email" name="email" required></label>
+      <label>Address: <textarea name="address" required></textarea></label>
+      <button type="submit">Simulate Payment</button>
+    </form>
+    <div id="payment-success" style="display:none;">
+      <h2>Payment Successful!</h2>
+      <div id="order-summary"></div>
+      <a href="index.html" class="checkout-btn" style="margin-top:1.5rem;">Back to Home</a>
+    </div>
+  </main>
+  <script src="js/main.js"></script>
+</body>
+</html> 

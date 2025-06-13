@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E-Commerce Store</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>My E-Commerce Store</h1>
+    <div class="header-right">
+      <nav>
+        <a href="cart.html" class="cart-link">
+          <span class="cart-icon">🛒</span>
+          <span id="cart-count" class="cart-badge">0</span>
+        </a>
+      </nav>
+      <button id="dark-mode-toggle" title="Toggle dark mode">🌙</button>
+    </div>
+  </header>
+  <section class="hero">
+    <div class="hero-content">
+      <h2>Welcome to the Best Tech Store!</h2>
+      <p>Shop the latest gadgets and accessories at unbeatable prices.</p>
+    </div>
+  </section>
+  <main>
+    <div class="search-bar-container">
+      <input type="text" id="search-input" placeholder="Search products...">
+    </div>
+    <div class="category-filter-container">
+      <button id="categories-btn">Categories</button>
+      <select id="category-filter"></select>
+    </div>
+    <section class="product-grid" id="product-list">
+     
+    </section>
+  </main>
+  <div id="product-modal" class="modal" style="display:none;">
+    <div class="modal-content">
+      <span class="close-modal" id="close-modal">&times;</span>
+      <div id="modal-details"></div>
+    </div>
+  </div>
+  <div id="toast-container"></div>
+  <footer>
+    &copy; 2025 My E-Commerce Store. All rights reserved.
+  </footer>
+  <script src="js/main.js"></script>
+</body>
+</html> 
