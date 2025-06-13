@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { Customer } from './entities/customer.entity';
+import { CustomerModule } from './customer.module';
 
 @Module({
   imports: [
@@ -10,9 +12,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       username: 'bigtee',
       password: 'Alpha[!]1101',
       database: 'customer_service',
-      autoLoadEntities: true,
-      synchronize: true, // false in production
+      entities: [Customer],
+      synchronize: true,
     }),
+    CustomerModule,
   ],
 })
 export class AppModule {}
