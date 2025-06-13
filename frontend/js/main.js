@@ -446,4 +446,118 @@ window.onload = function() {
   setupSearch();
   setupDarkModeToggle();
   setupBackToTop();
-}; 
+};
+
+// User Authentication
+let currentUser = JSON.parse(localStorage.getItem('currentUser'));
+
+function updateAuthButton() {
+  const loginBtn = document.getElementById('login-btn');
+  if (!loginBtn) return;
+
+  if (currentUser) {
+    loginBtn.innerHTML = `<div class="user-initial">${currentUser.name.charAt(0).toUpperCase()}</div>`;
+    loginBtn.title = `Logged in as ${currentUser.name}`;
+  } else {
+    loginBtn.innerHTML = 'Login / Sign Up';
+    loginBtn.title = 'Login or create an account';
+  }
+}
+
+function handleLogin(event) {
+  event.preventDefault();
+  const form = event.target;
+  const email = form.querySelector('input[type="email"]').value;
+  const password = form.querySelector('input[type="password"]').value;
+
+  // For demo purposes, we'll just create a user with the email
+  const name = email.split('@')[0];
+  currentUser = { name, email };
+  localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  
+  updateAuthButton();
+  document.getElementById('auth-modal').style.display = 'none';
+  showToast('Successfully logged in!');
+}
+
+function handleSignup(event) {
+  event.preventDefault();
+  const form = event.target;
+  const name = form.querySelector('input[type="text"]').value;
+  const email = form.querySelector('input[type="email"]').value;
+  const password = form.querySelector('input[type="password"]').value;
+  const confirmPassword = form.querySelectorAll('input[type="password"]')[1].value;
+
+  if (password !== confirmPassword) {
+    showToast('Passwords do not match!', 'error');
+    return;
+  }
+
+  currentUser = { name, email };
+  localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  
+  updateAuthButton();
+  document.getElementById('auth-modal').style.display = 'none';
+  showToast('Account created successfully!');
+}
+
+function logout() {
+  currentUser = null;
+  localStorage.removeItem('currentUser');
+  updateAuthButton();
+  showToast('Logged out successfully');
+}
+
+// Update the auth modal event listeners
+document.addEventListener('DOMContentLoaded', function() {
+  const loginForm = document.querySelector('#login-form form');
+  const signupForm = document.querySelector('#signup-form form');
+  const loginBtn = document.getElementById('login-btn');
+  
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin);
+  }
+  if (signupForm) {
+    signupForm.addEventListener('submit', handleSignup);
+  }
+  if (loginBtn) {
+    loginBtn.addEventListener('click', function() {
+      if (currentUser) {
+        // Show logout option
+        const shouldLogout = confirm('Do you want to logout?');
+        if (shouldLogout) {
+          logout();
+        }
+      } else {
+        document.getElementById('auth-modal').style.display = 'flex';
+      }
+    });
+  }
+  
+  updateAuthButton();
+});
+
+// Checkout Authentication Check
+function checkAuthForCheckout() {
+  if (!currentUser) {
+    const shouldLogin = confirm('Please login or sign up to continue with checkout. Would you like to login now?');
+    if (shouldLogin) {
+      document.getElementById('auth-modal').style.display = 'flex';
+      return false;
+    }
+    return false;
+  }
+  return true;
+}
+
+// Update the checkout button click handler
+document.addEventListener('DOMContentLoaded', function() {
+  const checkoutBtn = document.getElementById('checkout-btn');
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', function(e) {
+      if (!checkAuthForCheckout()) {
+        e.preventDefault();
+      }
+    });
+  }
+}); 
