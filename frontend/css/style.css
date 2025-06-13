@@ -562,7 +562,6 @@ body.dark-mode .toast {
   box-shadow: 0 4px 16px rgba(30,64,175,0.13);
 }
 
-/* Categories Button - tech, styled */
 #categories-btn {
   background: #2563eb;
   color: #fff;
@@ -583,23 +582,5 @@ body.dark-mode .toast {
   background: #1e40af;
   color: #fff;
 } 
-/* Fix for quantity count text in dark mode */
-body.dark-mode .cart-item-qty span {
-  color: #e3e9f7;
-}
 
-/* Ensure buttons inside quantity section are also styled properly */
-body.dark-mode .cart-item-qty button {
-  background: #2563eb;
-  color: #fff;
-  border-color: #2563eb;
-}
-body.dark-mode .cart-item-qty button:hover {
-  background: #60a5fa;
-  color: #181f2a;
-}
 
-/* Optional: add smooth color transition for a better dark mode switch effect */
-body, .cart-item-qty span, .cart-item-qty button {
-  transition: color 0.2s ease, background 0.2s ease, border 0.2s ease;
-}
