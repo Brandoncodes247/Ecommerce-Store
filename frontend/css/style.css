@@ -459,6 +459,40 @@ body.dark-mode button:hover, body.dark-mode .checkout-btn:hover, body.dark-mode 
   background: #60a5fa;
   color: #181f2a;
 }
+body.dark-mode input::placeholder,
+body.dark-mode textarea::placeholder {
+  color: #a0aec0 !important;
+  opacity: 1;
+}
+body.dark-mode button:hover, body.dark-mode .checkout-btn:hover, body.dark-mode #back-to-top:hover, body.dark-mode #categories-btn:hover {
+  background: #60a5fa;
+  color: #181f2a;
+}
+body.dark-mode input, 
+body.dark-mode textarea {
+  background: #232b3a;
+  color: #e3e9f7;
+  border-color: #2563eb;
+}
+body.dark-mode select {
+  background: #232b3a;
+  color: #e3e9f7;
+  border-color: #2563eb;
+}
+body.dark-mode .cart-item button {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}body, .cart-item-qty span, .cart-item-qty button {
+  transition: color 0.2s ease, background 0.2s ease, border 0.2s ease;
+}
+body.dark-mode .cart-item button:hover {
+  background: #60a5fa;
+  color: #181f2a;
+}
+body.dark-mode .modal {
+  background: rgba(26,34,51,0.65);
+}
 body.dark-mode #dark-mode-toggle {
   background: #232b3a;
   color: #60a5fa;
