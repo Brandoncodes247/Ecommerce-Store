@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Order } from './entities/order.entity';
+import { OrderLine } from './entities/order-line.entity';
 import { OrderModule } from './order.module';
 
 @Module({
@@ -12,7 +13,7 @@ import { OrderModule } from './order.module';
       username: 'bigtee',
       password: 'Alpha[!]1101',
       database: 'order_db',
-      entities: [Order],
+      entities: [Order, OrderLine], // ✅ include both
       synchronize: true,
     }),
     OrderModule,

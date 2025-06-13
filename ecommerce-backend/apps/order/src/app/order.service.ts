@@ -13,9 +13,15 @@ export class OrderService {
   ) {}
 
   create(dto: CreateOrderDto) {
-    const order = this.orderRepo.create({ ...dto, status: 'PENDING' });
+    const { orderLines, ...rest } = dto;
+    const order = this.orderRepo.create({
+      ...rest,
+      status: 'PENDING',
+      orderLines,
+    });
     return this.orderRepo.save(order);
   }
+
 
   findAll() {
     return this.orderRepo.find();

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany } from 'typeorm';
+import { OrderLine } from './order-line.entity';
 
 @Entity()
 export class Order {
@@ -16,4 +17,10 @@ export class Order {
 
   @CreateDateColumn()
   createdAt!: Date;
+
+  @OneToMany(() => OrderLine, orderLine => orderLine.order, {
+    cascade: true,
+    eager: true, // load order lines with order
+  })
+  orderLines!: OrderLine[];
 }
