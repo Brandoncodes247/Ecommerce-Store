@@ -1,0 +1,19 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compileOnSave": false,
+  "files": [],
+  "references": [
+    {
+      "path": "./apps/ecommerce-backend-e2e"
+    },
+    {
+      "path": "./apps/ecommerce-backend"
+    },
+    {
+      "path": "./apps/customer-e2e"
+    },
+    {
+      "path": "./apps/customer"
+    }
+  ]
+}
