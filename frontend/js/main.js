@@ -18,18 +18,23 @@ const products = [
 ];
 
 function getCart() {
-  return JSON.parse(localStorage.getItem('cart') || '[]');
+  const cart = localStorage.getItem('cart');
+  return cart ? JSON.parse(cart) : [];
 }
+
 function setCart(cart) {
   localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
 }
+
 function updateCartCount() {
   const cart = getCart();
   const count = cart.reduce((sum, item) => sum + item.qty, 0);
-  const el = document.getElementById('cart-count');
-  if (el) el.textContent = count;
+  const cartCount = document.getElementById('cart-count');
+  if (cartCount) {
+    cartCount.textContent = count;
+  }
 }
-
 
 function showToast(msg) {
   const container = document.getElementById('toast-container');
@@ -44,7 +49,6 @@ function showToast(msg) {
   }, 2000);
 }
 
-
 function getStars(rating) {
   const full = Math.floor(rating);
   const half = rating % 1 >= 0.5 ? 1 : 0;
@@ -52,7 +56,6 @@ function getStars(rating) {
   stars = stars.padEnd(5, '☆');
   return `<span class="product-rating">${stars}</span>`;
 }
-
 
 function renderCategoryFilter() {
   const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
@@ -93,31 +96,12 @@ function renderProducts(filter = '', category = 'All') {
         ${getStars(product.rating)}
         <h2>${product.name}</h2>
         <p><strong>KES ${product.price.toLocaleString()}</strong></p>
-        <div class="qty-selector" style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.7rem;">
-          <button class="qty-minus" title="Decrease quantity">-</button>
-          <input type="number" min="1" value="1" class="qty-input" style="width:40px;text-align:center;">
-          <button class="qty-plus" title="Increase quantity">+</button>
+        <div class="product-info">
+          <div class="stock-status in-stock">In Stock</div>
+          <div class="dispatch-info">Free delivery by tomorrow</div>
         </div>
-        <div style="display:flex;gap:0.5rem;">
-          <button data-id="${product.id}" class="add-cart-btn" title="Add to Cart">Add to Cart</button>
-          <button data-id="${product.id}" class="view-details-btn" title="View product details">View Details</button>
-        </div>
+        <button onclick="addToCart(${product.id}, 1)" class="add-to-cart-btn">Add to Cart</button>
       `;
-      // Quantity selector logic
-      const qtyInput = card.querySelector('.qty-input');
-      card.querySelector('.qty-minus').onclick = () => {
-        let val = parseInt(qtyInput.value, 10);
-        if (val > 1) qtyInput.value = val - 1;
-      };
-      card.querySelector('.qty-plus').onclick = () => {
-        let val = parseInt(qtyInput.value, 10);
-        qtyInput.value = val + 1;
-      };
-      card.querySelector('.add-cart-btn').onclick = () => {
-        addToCart(product.id, parseInt(qtyInput.value, 10));
-        qtyInput.value = 1;
-      };
-      card.querySelector('.view-details-btn').onclick = () => openProductModal(product.id);
       list.appendChild(card);
     });
   }, 1000);
@@ -133,7 +117,6 @@ function addToCart(productId, qty = 1) {
     cart.push({ ...product, qty });
   }
   setCart(cart);
-  updateCartCount();
   showToast('Added to cart!');
 }
 
@@ -142,13 +125,18 @@ function openProductModal(productId) {
   const details = document.getElementById('modal-details');
   const product = products.find(p => p.id === productId);
   if (!modal || !details || !product) return;
+
   details.innerHTML = `
     <img src="${product.image}" alt="${product.name}" style="width:140px;height:140px;object-fit:contain;display:block;margin:0 auto 1rem auto;">
     <h2>${product.name}</h2>
     ${getStars(product.rating)}
     <p style="margin:0.5rem 0 1rem 0;">${product.desc}</p>
     <p><strong>Price:</strong> KES ${product.price.toLocaleString()}</p>
-    <button onclick="addToCart(${product.id})">Add to Cart</button>
+    <div class="product-info" style="margin: 1rem 0;">
+      <div class="stock-status in-stock">In Stock</div>
+      <div class="dispatch-info">Free delivery by tomorrow</div>
+    </div>
+    <button onclick="addToCart(${product.id}, 1)">Add to Cart</button>
   `;
   modal.style.display = 'flex';
 }
@@ -161,7 +149,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-
 function setupSearch() {
   const input = document.getElementById('search-input');
   if (!input) return;
@@ -171,86 +158,85 @@ function setupSearch() {
   });
 }
 
-
 function renderCart() {
-  const section = document.getElementById('cart-items');
-  if (!section) return;
-  let cart = getCart();
-  section.innerHTML = '';
+  const cartItems = document.getElementById('cart-items');
+  const cartTotal = document.getElementById('cart-total');
+  const checkoutBtn = document.getElementById('checkout-btn');
+  
+  if (!cartItems || !cartTotal) return;
+
+  const cart = getCart();
+  
   if (cart.length === 0) {
-    section.innerHTML = '<div class="empty-illustration">🛒<br>Your cart is empty.</div>';
-    document.getElementById('cart-total').textContent = '0.00';
+    cartItems.innerHTML = `
+      <div class="empty-cart">
+        <div class="empty-cart-icon">🛒</div>
+        <h2>Your cart is empty</h2>
+        <p>Looks like you haven't added any items to your cart yet.</p>
+        <a href="index.html" class="continue-shopping-btn">Continue Shopping</a>
+      </div>
+    `;
+    cartTotal.textContent = '0.00';
+    if (checkoutBtn) checkoutBtn.style.display = 'none';
     return;
   }
-  cart.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'cart-item';
-    div.innerHTML = `
+
+  if (checkoutBtn) checkoutBtn.style.display = 'inline-block';
+  
+  cartItems.innerHTML = cart.map(item => `
+    <div class="cart-item">
       <img src="${item.image}" alt="${item.name}">
       <div class="cart-item-details">
         <h2>${item.name}</h2>
-        <p>KES ${item.price.toLocaleString()}</p>
+        <p class="cart-item-price">KES ${item.price.toLocaleString()}</p>
       </div>
       <div class="cart-item-qty">
-        <button onclick="window.updateQty(${item.id}, -1)">-</button>
+        <button onclick="updateQty(${item.id}, -1)" class="qty-btn">-</button>
         <span>${item.qty}</span>
-        <button onclick="window.updateQty(${item.id}, 1)">+</button>
+        <button onclick="updateQty(${item.id}, 1)" class="qty-btn">+</button>
       </div>
-      <button onclick="window.removeFromCart(${item.id})">Remove</button>
-    `;
-    section.appendChild(div);
-  });
-  const total = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
-  document.getElementById('cart-total').textContent = `KES ${total.toLocaleString()}`;
+      <button onclick="removeFromCart(${item.id})" class="remove-btn">Remove</button>
+    </div>
+  `).join('');
 
-  // Add Continue Shopping and Clear Cart buttons
-  const cartSummary = document.querySelector('.cart-summary');
-  if (cartSummary && !document.getElementById('continue-shopping-btn')) {
-    const continueBtn = document.createElement('a');
-    continueBtn.href = 'index.html';
-    continueBtn.className = 'checkout-btn';
-    continueBtn.id = 'continue-shopping-btn';
-    continueBtn.textContent = 'Continue Shopping';
-    continueBtn.title = 'Go back to product catalog';
-    cartSummary.insertBefore(continueBtn, cartSummary.firstChild);
-
-    const clearBtn = document.createElement('button');
-    clearBtn.className = 'checkout-btn';
-    clearBtn.id = 'clear-cart-btn';
-    clearBtn.textContent = 'Clear Cart';
-    clearBtn.title = 'Remove all items from cart';
-    clearBtn.style.background = 'linear-gradient(90deg, #e11d48 0%, #f87171 100%)';
-    clearBtn.style.color = '#fff';
-    clearBtn.style.marginLeft = '1rem';
-    clearBtn.onclick = () => {
-      setCart([]);
-      renderCart();
-      updateCartCount();
-      showToast('Cart cleared!');
-    };
-    cartSummary.appendChild(clearBtn);
-  }
+  const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
+  cartTotal.textContent = total.toLocaleString();
 }
-window.updateQty = function(id, delta) {
+
+function updateQty(id, delta) {
   let cart = getCart();
   const idx = cart.findIndex(item => item.id === id);
+  
   if (idx > -1) {
     cart[idx].qty += delta;
-    if (cart[idx].qty < 1) cart[idx].qty = 1;
+    if (cart[idx].qty < 1) {
+      cart.splice(idx, 1);
+    }
     setCart(cart);
     renderCart();
-    updateCartCount();
-    showToast('Quantity updated');
+    showToast('Cart updated');
   }
-};
-window.removeFromCart = function(id) {
+}
+
+function removeFromCart(id) {
   let cart = getCart();
   cart = cart.filter(item => item.id !== id);
   setCart(cart);
   renderCart();
-  updateCartCount();
-  showToast('Removed from cart');
-};
+  showToast('Item removed from cart');
+}
+
+// Add event listener for clear cart button
+document.addEventListener('DOMContentLoaded', function() {
+  const clearCartBtn = document.getElementById('clear-cart-btn');
+  if (clearCartBtn) {
+    clearCartBtn.addEventListener('click', function() {
+      setCart([]);
+      renderCart();
+      showToast('Cart cleared');
+    });
+  }
+});
 
 // Checkout Page
 function renderCheckoutSummary() {
@@ -359,6 +345,94 @@ function setupBackToTop() {
   btn.onclick = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+}
+
+// Auth Modal Functionality
+const loginBtn = document.getElementById('login-btn');
+const authModal = document.getElementById('auth-modal');
+const closeAuthModal = document.getElementById('close-auth-modal');
+const authTabs = document.querySelectorAll('.auth-tab');
+const loginForm = document.getElementById('login-form');
+const signupForm = document.getElementById('signup-form');
+
+loginBtn.addEventListener('click', () => {
+  authModal.style.display = 'flex';
+});
+
+closeAuthModal.addEventListener('click', () => {
+  authModal.style.display = 'none';
+});
+
+authTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    // Remove active class from all tabs
+    authTabs.forEach(t => t.classList.remove('active'));
+    // Add active class to clicked tab
+    tab.classList.add('active');
+    
+    // Show corresponding form
+    if (tab.dataset.tab === 'login') {
+      loginForm.style.display = 'block';
+      signupForm.style.display = 'none';
+    } else {
+      loginForm.style.display = 'none';
+      signupForm.style.display = 'block';
+    }
+  });
+});
+
+// Close modal when clicking outside
+window.addEventListener('click', (e) => {
+  if (e.target === authModal) {
+    authModal.style.display = 'none';
+  }
+});
+
+// Handle form submissions
+document.querySelectorAll('.auth-form form').forEach(form => {
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    // Here you would typically handle the form submission
+    // For now, we'll just show a success message
+    showToast('Form submitted successfully!', 'success');
+    authModal.style.display = 'none';
+  });
+});
+
+// Function to create product cards with stock and dispatch info
+function createProductCard(product) {
+  const card = document.createElement('div');
+  card.className = 'product-card';
+  
+  // Generate random stock status for demo
+  const stockStatuses = ['in-stock', 'low-stock', 'out-of-stock'];
+  const stockStatus = stockStatuses[Math.floor(Math.random() * stockStatuses.length)];
+  const stockText = {
+    'in-stock': 'In Stock',
+    'low-stock': 'Low Stock - Only 3 left',
+    'out-of-stock': 'Out of Stock'
+  }[stockStatus];
+  
+  // Generate random dispatch info for demo
+  const dispatchOptions = [
+    'Free delivery by tomorrow',
+    'Express delivery available',
+    'Local pickup available'
+  ];
+  const dispatchInfo = dispatchOptions[Math.floor(Math.random() * dispatchOptions.length)];
+  
+  card.innerHTML = `
+    <img src="${product.image}" alt="${product.name}">
+    <h2>${product.name}</h2>
+    <p>${product.description}</p>
+    <div class="product-info">
+      <div class="stock-status ${stockStatus}">${stockText}</div>
+      <div class="dispatch-info">${dispatchInfo}</div>
+    </div>
+    <button onclick="addToCart(${product.id})">Add to Cart</button>
+  `;
+  
+  return card;
 }
 
 window.onload = function() {

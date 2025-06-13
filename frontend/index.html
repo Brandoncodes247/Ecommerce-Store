@@ -11,6 +11,7 @@
     <h1>My E-Commerce Store</h1>
     <div class="header-right">
       <nav>
+        <button id="login-btn" class="auth-btn">Login / Sign Up</button>
         <a href="cart.html" class="cart-link">
           <span class="cart-icon">🛒</span>
           <span id="cart-count" class="cart-badge">0</span>
@@ -44,6 +45,49 @@
     </div>
   </div>
   <div id="toast-container"></div>
+  <div id="auth-modal" class="modal" style="display:none;">
+    <div class="modal-content auth-modal-content">
+      <span class="close-modal" id="close-auth-modal">&times;</span>
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Login</button>
+        <button class="auth-tab" data-tab="signup">Sign Up</button>
+      </div>
+      <div id="login-form" class="auth-form">
+        <form>
+          <label>
+            Email
+            <input type="email" required placeholder="Enter your email">
+          </label>
+          <label>
+            Password
+            <input type="password" required placeholder="Enter your password">
+          </label>
+          <button type="submit" class="auth-submit-btn">Login</button>
+        </form>
+      </div>
+      <div id="signup-form" class="auth-form" style="display: none;">
+        <form>
+          <label>
+            Full Name
+            <input type="text" required placeholder="Enter your full name">
+          </label>
+          <label>
+            Email
+            <input type="email" required placeholder="Enter your email">
+          </label>
+          <label>
+            Password
+            <input type="password" required placeholder="Create a password">
+          </label>
+          <label>
+            Confirm Password
+            <input type="password" required placeholder="Confirm your password">
+          </label>
+          <button type="submit" class="auth-submit-btn">Sign Up</button>
+        </form>
+      </div>
+    </div>
+  </div>
   <footer>
     &copy; 2025 My E-Commerce Store. All rights reserved.
   </footer>

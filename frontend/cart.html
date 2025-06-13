@@ -9,18 +9,38 @@
 <body>
   <header>
     <h1>Shopping Cart</h1>
-    <nav>
-      <a href="index.html">Home</a>
-    </nav>
+    <div class="header-right">
+      <nav>
+        <a href="index.html" class="back-to-shop">← Back to Shop</a>
+        <button id="dark-mode-toggle" title="Toggle dark mode">🌙</button>
+      </nav>
+    </div>
   </header>
   <main>
-    <section id="cart-items"> 
+    <section id="cart-items">
+      <!-- Cart items will be rendered here -->
     </section>
     <div class="cart-summary">
-      <span>Total: KES <span id="cart-total">0.00</span></span>
-      <a href="checkout.html" class="checkout-btn">Checkout</a>
+      <div class="cart-summary-content">
+        <span class="cart-total">Total: KES <span id="cart-total">0.00</span></span>
+        <div class="cart-actions">
+          <button id="clear-cart-btn" class="clear-cart-btn">Clear Cart</button>
+          <a href="checkout.html" class="checkout-btn" id="checkout-btn">Proceed to Checkout</a>
+        </div>
+      </div>
     </div>
   </main>
+  <div id="toast-container"></div>
+  <footer>
+    &copy; 2025 My E-Commerce Store. All rights reserved.
+  </footer>
   <script src="js/main.js"></script>
+  <script>
+    // Initialize cart when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      renderCart();
+      setupDarkModeToggle();
+    });
+  </script>
 </body>
 </html> 
