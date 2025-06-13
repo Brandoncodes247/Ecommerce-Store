@@ -51,7 +51,11 @@
       "options": {
         "targetName": "test"
       },
-      "exclude": ["apps/ecommerce-backend-e2e/**/*", "apps/customer-e2e/**/*"]
+      "exclude": [
+        "apps/ecommerce-backend-e2e/**/*",
+        "apps/customer-e2e/**/*",
+        "apps/product-e2e/**/*"
+      ]
     }
   ],
   "targetDefaults": {
