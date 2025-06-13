@@ -57,7 +57,9 @@
         "apps/product-e2e/**/*",
         "order-e2e/**/*",
         "apps/order-e2e/**/*",
-        "apps/inventory-e2e/**/*"
+        "apps/inventory-e2e/**/*",
+        "apps/notification-e2e/**/*",
+        "apps/payment-e2e/**/*"
       ]
     }
   ],

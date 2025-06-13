@@ -38,6 +38,18 @@
     },
     {
       "path": "./apps/inventory"
+    },
+    {
+      "path": "./apps/notification-e2e"
+    },
+    {
+      "path": "./apps/notification"
+    },
+    {
+      "path": "./apps/payment-e2e"
+    },
+    {
+      "path": "./apps/payment"
     }
   ]
 }

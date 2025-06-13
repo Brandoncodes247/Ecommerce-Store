@@ -1,0 +1,26 @@
+{
+  "name": "@ecommerce-backend/payment-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@ecommerce-backend/payment"
+    ],
+    "targets": {
+      "e2e": {
+        "executor": "@nx/jest:jest",
+        "outputs": [
+          "{projectRoot}/test-output/jest/coverage"
+        ],
+        "options": {
+          "jestConfig": "apps/payment-e2e/jest.config.ts",
+          "passWithNoTests": true
+        },
+        "dependsOn": [
+          "@ecommerce-backend/payment:build",
+          "@ecommerce-backend/payment:serve"
+        ]
+      }
+    }
+  }
+}

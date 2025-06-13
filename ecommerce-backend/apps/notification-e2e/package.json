@@ -1,0 +1,26 @@
+{
+  "name": "@ecommerce-backend/notification-e2e",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "implicitDependencies": [
+      "@ecommerce-backend/notification"
+    ],
+    "targets": {
+      "e2e": {
+        "executor": "@nx/jest:jest",
+        "outputs": [
+          "{projectRoot}/test-output/jest/coverage"
+        ],
+        "options": {
+          "jestConfig": "apps/notification-e2e/jest.config.ts",
+          "passWithNoTests": true
+        },
+        "dependsOn": [
+          "@ecommerce-backend/notification:build",
+          "@ecommerce-backend/notification:serve"
+        ]
+      }
+    }
+  }
+}
