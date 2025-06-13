@@ -54,7 +54,9 @@
       "exclude": [
         "apps/ecommerce-backend-e2e/**/*",
         "apps/customer-e2e/**/*",
-        "apps/product-e2e/**/*"
+        "apps/product-e2e/**/*",
+        "order-e2e/**/*",
+        "apps/order-e2e/**/*"
       ]
     }
   ],
