@@ -21,5 +21,8 @@ export class AppController {
     console.log(`inventory_release req:`, req)
     return this.appService.releaseInventory(req.productId, req.quantity);
   }
+  getHello(): string {
+    return 'Hello World!';
+  }
 
 }

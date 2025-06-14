@@ -29,5 +29,8 @@ export class AppController {
     async onModuleInit(){
         this.client.subscribeToResponseOf('payment_inquiry');
         this.client.subscribeToResponseOf('payment_create');}
-
+    
+    getHello(): string {
+        return 'Hello World!';
+    }
 }
