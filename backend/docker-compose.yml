@@ -1,0 +1,118 @@
+version: '3.8'
+
+services:
+  kafka:
+    image: bitnami/kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"     # For internal container communication
+      - "9094:9094"     # For external (host) access
+    environment:
+      - KAFKA_KRAFT_MODE=true
+      - KAFKA_CFG_NODE_ID=1
+      - KAFKA_CFG_PROCESS_ROLES=broker,controller
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,PLAINTEXT_HOST://:9094,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_LOG_DIRS=/bitnami/kafka/data
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    volumes:
+      - kafka_data:/bitnami/kafka
+    networks:
+      - ecommerce
+
+  db:
+    image: postgres
+    restart: always
+    container_name: postgres
+    environment:
+      - POSTGRES_PASSWORD=BABY_rhine32
+      - POSTGRES_USER=db-ian
+      - POSTGRES_DB=ecommerce
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    ports:
+      - '5433:5432'
+    hostname: db
+    networks:
+      - ecommerce
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    container_name: nest-pgadmin4
+    env_file:
+      - .env
+    ports:
+      - '5050:80'
+    depends_on:
+      - db
+    networks:
+      - ecommerce
+
+  gateway:
+    build: ./gateway
+    restart: always
+    depends_on:
+      - db
+      - kafka
+    hostname: gateway
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    networks:
+      - ecommerce
+
+  order:
+    build: ./order
+    restart: always
+    depends_on:
+      - db
+      - kafka
+    env_file:
+      - .env
+    networks:
+      - ecommerce
+
+  inventory:
+    build: ./inventory
+    restart: always
+    depends_on:
+      - db
+      - kafka
+    env_file:
+      - .env
+    networks:
+      - ecommerce
+
+  payment:
+    build: ./payment
+    restart: always
+    depends_on:
+      - db
+      - kafka
+    env_file:
+      - .env
+    networks:
+      - ecommerce
+
+  product:
+    build: ./product
+    restart: always
+    depends_on:
+      - db
+      - kafka
+    env_file:
+      - .env
+    networks:
+      - ecommerce
+
+volumes:
+  kafka_data:
+
+networks:
+  ecommerce:
+    driver: bridge
