@@ -21,4 +21,9 @@ export class ProductService {
     // }
     return  this.gatewayService.send('product_delete', req)
   }
+  async getAllProducts(): Promise<IProduct[]> {
+    // Implement the logic to fetch all products here
+    // For example, fetch from a database or call a microservice
+    return []; // Replace with actual implementation
+  }
 }

@@ -21,4 +21,8 @@ export class AppController {
     console.log("received request: ",newProduct )
     return this.appService.deleteProduct(newProduct);
   }
+  @MessagePattern('product_find_all')
+  async getAllProducts(): Promise<Product[]> {
+    return this.appService.getAllProducts();
+  }
 }

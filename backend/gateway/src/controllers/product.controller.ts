@@ -21,6 +21,7 @@ export class ProductController {
     this.client.subscribeToResponseOf('product_create');
     this.client.subscribeToResponseOf('product_update');
     this.client.subscribeToResponseOf('product_delete');
+    this.client.subscribeToResponseOf('product_find_all');
     const kafka = new Kafka({
       clientId: 'gateway',
       brokers: [process.env.KAFKA_HOST],
@@ -77,5 +78,9 @@ export class ProductController {
     type:ProductDto })
   async deleteProduct(@Body() req: IProduct) {
     return await this.appService.deleteProduct(req);
+  }
+  @Get()
+  async getAllProducts() {
+    return await this.client.send('product_find_all', {}); // Request to Kafka
   }
 }

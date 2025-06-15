@@ -16,7 +16,7 @@ export class OrderController {
     async createProduct(@Body() req: OrderDto) {
         return await this.orderService.createOrder(req);
     }
-
+  
     onModuleInit() {
         this.client.subscribeToResponseOf('order_create');
 

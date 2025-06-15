@@ -49,4 +49,14 @@ export class ProductService {
         }
 
     }
+    async getAllProducts(): Promise<Product[]> {
+        try {
+            const products = await this.productRepository.find();
+            console.log('fetched all products: ', products);
+            return products;
+        } catch (e) {
+            console.error('Error fetching products:', e.message);
+            return [];
+        }
+    }
 }
