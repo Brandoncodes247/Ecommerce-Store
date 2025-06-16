@@ -9,6 +9,8 @@ import {OrderController} from "./controllers/order.controller";
 import {OrderService} from "./services/order.service";
 import {InventoryService} from "./services/inventory.service";
 import {InventoryController} from "./controllers/inventory.controller";
+import {PaymentController} from "./controllers/payment.controller";
+import {PaymentService} from "./services/payment.service";
 
 @Module({
   imports: [
@@ -21,7 +23,7 @@ import {InventoryController} from "./controllers/inventory.controller";
             options:{client:{clientId:'gateway',
                       brokers:[ configService.get<string>('KAFKA_HOST')],},consumer:{groupId:'gateway-group'},}})//producer:{createPartitioner()}
   }] as Array<ClientsProviderAsyncOptions>} as ClientsModuleAsyncOptions)],
-  controllers: [ProductController,OrderController, InventoryController],
-  providers: [ProductService,OrderService, InventoryService ],
+  controllers: [ProductController,OrderController, InventoryController,PaymentController],
+  providers: [ProductService,OrderService, InventoryService ,PaymentService],
 })
 export class AppModule {}
