@@ -35,19 +35,19 @@
       <select id="category-filter"></select>
     </div>
     <section class="product-grid" id="product-list">
-     
+      <!-- Product cards will be rendered here by JavaScript -->
     </section>
   </main>
   <div id="product-modal" class="modal" style="display:none;">
     <div class="modal-content">
-      <span class="close-modal" id="close-modal">&times;</span>
+      <span id="close-modal" class="close-modal">&times;</span>
       <div id="modal-details"></div>
     </div>
   </div>
   <div id="toast-container"></div>
   <div id="auth-modal" class="modal" style="display:none;">
     <div class="modal-content auth-modal-content">
-      <span class="close-modal" id="close-auth-modal">&times;</span>
+      <span id="close-auth-modal" class="close-modal">&times;</span>
       <div class="auth-tabs">
         <button class="auth-tab active" data-tab="login">Login</button>
         <button class="auth-tab" data-tab="signup">Sign Up</button>
@@ -91,6 +91,6 @@
   <footer>
     &copy; 2025 My E-Commerce Store. All rights reserved.
   </footer>
-  <script src="js/main.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html> 
