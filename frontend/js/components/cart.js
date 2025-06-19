@@ -13,25 +13,24 @@ export function renderCart() {
     return;
   }
 
-  cartItems.innerHTML = cart.map(item => {
-    const imageUrl = item.imageUrl || item.image || '';
-    const price = Number(item.price || 0).toLocaleString();
-    return `
-      <div class="cart-item">
-        <img src="${imageUrl}" alt="${item.name}">
-        <div>
-          <h3>${item.name}</h3>
-          <p>KES ${price}</p>
-          <div class="qty-controls">
-            <button onclick="app.updateQty(${item.id}, -1)">-</button>
-            <span>${item.qty}</span>
-            <button onclick="app.updateQty(${item.id}, 1)">+</button>
-          </div>
-          <button onclick="app.removeFromCart(${item.id})">Remove</button>
+ cartItems.innerHTML = cart.map(item => {
+  const price = Number(item.price || 0).toLocaleString();
+  return `
+    <div class="cart-item">
+      <img src="${item.imageUrl}" alt="${item.name}">
+      <div>
+        <h3>${item.name}</h3>
+        <p>KES ${price}</p>
+        <div class="qty-controls">
+          <button onclick="app.updateQty(${item.id}, -1)">-</button>
+          <span>${item.qty}</span>
+          <button onclick="app.updateQty(${item.id}, 1)">+</button>
         </div>
+        <button onclick="app.removeFromCart(${item.id})">Remove</button>
       </div>
-    `;
-  }).join('');
+    </div>
+  `;
+}).join('');
 
   const total = cart.reduce((sum, item) => sum + (Number(item.price) * Number(item.qty)), 0);
   cartTotal.textContent = total.toLocaleString();
