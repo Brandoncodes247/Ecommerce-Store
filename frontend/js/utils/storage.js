@@ -7,16 +7,21 @@ export function getCart() {
 }
 
 export function setCart(cart) {
-  localStorage.setItem('cart', JSON.stringify(cart));
+  const safeCart = cart.map(item => ({
+    ...item,
+    qty: Number(item.qty || 1),
+    price: Number(item.price || 0),
+  }));
+  localStorage.setItem('cart', JSON.stringify(safeCart));
   updateCartCount();
-  console.log('storage.js - setCart: Cart saved to localStorage:', cart);
+  console.log('storage.js - setCart: Cart saved to localStorage:', safeCart);
 }
 
 export function updateCartCount() {
   const cart = getCart();
-  const count = cart.reduce((sum, item) => sum + item.qty, 0);
+  const count = cart.reduce((sum, item) => sum + Number(item.qty || 0), 0);
   const cartCount = document.getElementById('cart-count');
   if (cartCount) {
     cartCount.textContent = count;
   }
-} 
+}

@@ -1,4 +1,7 @@
-console.log('✅ products.js loaded (latest version)');
+console.log('✅ products.js loaded');
+
+import { updateCartCount } from '../utils/storage.js';
+import { showToast } from '../utils/ui.js';
 
 let products = [];
 
@@ -14,50 +17,62 @@ export async function renderProducts() {
   try {
     const res = await fetch('http://localhost:3001/api/product');
     products = await res.json();
+    window.products = products; // Make globally available
     container.innerHTML = '';
 
     products.forEach(product => {
       const card = document.createElement('div');
       card.className = 'product-card';
+      const imageUrl = fixImageUrl(product.imageUrl || '');
+      const price = Number(product.price || 0).toLocaleString();
 
       card.innerHTML = `
-        <img src="${fixImageUrl(product.imageUrl)}" alt="${product.name}" class="product-img" />
+        <img src="${imageUrl}" alt="${product.name}" class="product-img" />
         <h3>${product.name}</h3>
         <p>${product.description}</p>
-        <p><strong>KES ${product.price}</strong></p>
+        <p><strong>KES ${price}</strong></p>
+        <div class="qty-control">
+          <input type="number" id="qty-${product.id}" value="1" min="1" />
+          <button class="add-to-cart-btn" data-id="${product.id}">Add to Cart</button>
+        </div>
       `;
-
       container.appendChild(card);
     });
 
-    renderCategoryFilter();
+    // Bind cart buttons
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = parseInt(btn.getAttribute('data-id'));
+        const qty = parseInt(document.getElementById(`qty-${id}`).value || '1');
+        addToCart(id, qty);
+      });
+    });
+
   } catch (error) {
-    console.error('Failed to load products:', error);
+    console.error('❌ Failed to load products:', error);
     container.innerHTML = '<p style="color:red;">Failed to load products.</p>';
   }
 }
+function addToCart(productId, qty = 1) {
+  let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+  const idx = cart.findIndex(item => item.id === productId);
 
-export function renderCategoryFilter() {
-  const select = document.getElementById('category-filter');
-  const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+  if (idx > -1) {
+    cart[idx].qty += qty;
+  } else {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      cart.push({ ...product, qty });
+    } else {
+      console.error('Product not found:', productId);
+      return;
+    }
+  }
 
-  select.innerHTML = `<option value="">All Categories</option>`;
-  categories.forEach(cat => {
-    const option = document.createElement('option');
-    option.value = cat;
-    option.textContent = cat;
-    select.appendChild(option);
-  });
-
-  select.addEventListener('change', () => {
-    const selected = select.value;
-    const filtered = selected
-      ? products.filter(p => p.category === selected)
-      : products;
-    renderFilteredProducts(filtered);
-  });
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+  showToast('🛒 Product added to cart!');
 }
-
 export function setupSearch() {
   const searchInput = document.getElementById('search-input');
   searchInput.addEventListener('input', () => {
@@ -69,28 +84,3 @@ export function setupSearch() {
     renderFilteredProducts(filtered);
   });
 }
-
-function renderFilteredProducts(filteredList) {
-  const container = document.getElementById('product-list');
-  container.innerHTML = '';
-
-  if (filteredList.length === 0) {
-    container.innerHTML = '<p>No products found.</p>';
-    return;
-  }
-
-  filteredList.forEach(product => {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-
-    card.innerHTML = `
-      <img src="${fixImageUrl(product.imageUrl)}" alt="${product.name}" class="product-img" />
-      <h3>${product.name}</h3>
-      <p>${product.description}</p>
-      <p><strong>KES ${product.price}</strong></p>
-    `;
-
-    container.appendChild(card);
-  });
-}
-
