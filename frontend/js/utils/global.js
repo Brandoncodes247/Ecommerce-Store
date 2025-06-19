@@ -1,7 +1,7 @@
 // Import all necessary functions
 import { addToCart, updateQty, removeFromCart, renderCart } from '../components/cart.js';
-import { openProductModal } from '../components/products.js';
 import { showToast } from './ui.js';
+import {renderProducts} from '../components/products.js';
 import { setCart } from './storage.js';
 
 
@@ -11,7 +11,7 @@ window.app = {
   updateQty,
   removeFromCart,
   renderCart,
-  openProductModal,
   showToast,
+  renderProducts,
   setCart,
 }; 
