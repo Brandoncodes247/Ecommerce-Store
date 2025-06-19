@@ -1,6 +1,7 @@
 import {Inject, Injectable} from '@nestjs/common';
 import {ClientKafka} from "@nestjs/microservices";
 import {IProduct} from "../entities/interfaces/product.interface";
+import { Observable, firstValueFrom as rxjsFirstValueFrom } from 'rxjs';
 
 @Injectable()
 export class ProductService {
@@ -22,8 +23,11 @@ export class ProductService {
     return  this.gatewayService.send('product_delete', req)
   }
   async getAllProducts(): Promise<IProduct[]> {
-    // Implement the logic to fetch all products here
-    // For example, fetch from a database or call a microservice
-    return []; // Replace with actual implementation
+    return firstValueFrom(this.gatewayService.send<IProduct[]>('product_find_all', {}));
   }
 }
+
+function firstValueFrom<T>(observable: Observable<T>): Promise<T> {
+  return rxjsFirstValueFrom(observable);
+}
+

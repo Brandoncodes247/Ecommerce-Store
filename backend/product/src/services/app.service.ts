@@ -27,7 +27,7 @@ export class ProductService {
         try {
             const result = await this.productRepository.save({
                 id: product.id,
-                description: product.description, name: product.name, price: product.price
+                description: product.description, name: product.name, price: product.price,imageUrl: product.imageUrl
             })
             console.log('updated product: ', result)
             return

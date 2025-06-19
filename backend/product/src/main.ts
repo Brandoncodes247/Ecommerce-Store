@@ -1,21 +1,29 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import {KafkaOptions, Transport} from "@nestjs/microservices";
-//ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js --config src/ormconfig.ts
-//typeorm migration:generate -d <path/to/datasource> path/to/migrations/<migration-name>
-//npm run typeorm migration:generate db-migration/dataSource.ts db-migration/migrations/migrate-products.ts
+import { Transport } from '@nestjs/microservices';
+import * as express from 'express';
+import { join } from 'path';
+
 async function bootstrap() {
-  const app = await NestFactory.createMicroservice(AppModule, {
+  const app = await NestFactory.create(AppModule);
+
+  // Serve static images from /uploads
+  app.use('/uploads', express.static(join(__dirname, '..', 'public/uploads')));
+
+  // Connect Kafka microservice
+  app.connectMicroservice({
     transport: Transport.KAFKA,
     options: {
       client: {
         brokers: [process.env.KAFKA_HOST],
       },
       consumer: {
-        groupId: 'product-group',  // unique group for producer
+        groupId: 'product-group',
       },
     },
-  }as KafkaOptions);
-  await app.listen();
+  });
+
+  await app.startAllMicroservices(); // Start Kafka
+  await app.listen(3000);            // Start HTTP server
 }
 bootstrap();

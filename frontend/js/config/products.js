@@ -1,18 +1,96 @@
-export const products = [
-  { id: 1, name: 'USB Flash Drive', price: 1200, image: './product images/USB Flash Drive.png', rating: 4.3, desc: '16GB USB 3.0 flash drive for quick file transfers.', category: 'Accessories' },
-  { id: 2, name: 'Wireless Mouse', price: 1500, image: './product images/Wireless Mouse.png', rating: 4.2, desc: 'Comfortable wireless mouse with long battery life.', category: 'Input' },
-  { id: 3, name: 'Wired Keyboard', price: 1800, image: './product images/Wired Keyboard.png', rating: 4.1, desc: 'Full-size keyboard with quiet keys.', category: 'Input' },
-  { id: 4, name: 'HDMI Cable', price: 600, image: './product images/HDMI Cable.png', rating: 4.4, desc: '1.5m HDMI cable for monitors and TVs.', category: 'Cables' },
-  { id: 5, name: 'Laptop Stand', price: 2500, image: './product images/Laptop Stand.png', rating: 4.5, desc: 'Adjustable stand for laptops up to 17 inches.', category: 'Accessories' },
-  { id: 6, name: 'Bluetooth Speaker', price: 3200, image: './product images/Bluetooth Speaker.png', rating: 4.3, desc: 'Portable speaker with clear sound and bass.', category: 'Audio' },
-  { id: 7, name: 'Webcam', price: 2800, image: './product images/Webcam.png', rating: 4.0, desc: 'HD webcam for video calls and streaming.', category: 'Accessories' },
-  { id: 8, name: 'Power Bank', price: 1700, image: './product images/Power Bank.png', rating: 4.4, desc: '5000mAh portable charger for phones and tablets.', category: 'Power' },
-  { id: 9, name: 'Wireless Earbuds', price: 2200, image: './product images/Wireless Earbuds.png', rating: 4.2, desc: 'Compact earbuds with charging case.', category: 'Audio' },
-  { id: 10, name: 'Monitor', price: 14500, image: './product images/Monitor.png', rating: 4.5, desc: '21.5-inch Full HD monitor for work and play.', category: 'Display' },
-  { id: 11, name: 'USB-C Charger', price: 900, image: './product images/USB-C Charger.png', rating: 4.3, desc: 'Fast charging USB-C wall adapter.', category: 'Power' },
-  { id: 12, name: 'Ethernet Cable', price: 500, image: './product images/Ethernet Cable.png', rating: 4.1, desc: '2m Cat6 ethernet cable for fast internet.', category: 'Cables' },
-  { id: 13, name: 'Mouse Pad', price: 400, image: './product images/Mouse Pad.png', rating: 4.2, desc: 'Smooth surface mouse pad for precise control.', category: 'Accessories' },
-  { id: 14, name: 'SD Card', price: 1100, image: './product images/SD Card.png', rating: 4.4, desc: '32GB SD card for cameras and devices.', category: 'Accessories' },
-  { id: 15, name: 'Smart Plug', price: 1600, image: './product images/Smart Plug.png', rating: 4.3, desc: 'WiFi smart plug for remote control of devices.', category: 'Power' },
-  { id: 16, name: 'LED Desk Lamp', price: 2000, image: './product images/LED Desk Lamp.png', rating: 4.5, desc: 'Adjustable LED lamp with touch controls.', category: 'Accessories' },
-]; 
+console.log('✅ products.js loaded (latest version)');
+
+let products = [];
+
+function fixImageUrl(url) {
+  if (!url) return '';
+  return url.replace('http://localhost:3000', 'http://localhost:3002');
+}
+
+export async function renderProducts() {
+  const container = document.getElementById('product-list');
+  container.innerHTML = '<p>Loading products...</p>';
+
+  try {
+    const res = await fetch('http://localhost:3001/product');
+    products = await res.json();
+    container.innerHTML = '';
+
+    products.forEach(product => {
+      const card = document.createElement('div');
+      card.className = 'product-card';
+
+      card.innerHTML = `
+        <img src="${fixImageUrl(product.imageUrl)}" alt="${product.name}" class="product-img" />
+        <h3>${product.name}</h3>
+        <p>${product.description}</p>
+        <p><strong>KES ${product.price}</strong></p>
+      `;
+
+      container.appendChild(card);
+    });
+
+    renderCategoryFilter();
+  } catch (error) {
+    console.error('Failed to load products:', error);
+    container.innerHTML = '<p style="color:red;">Failed to load products.</p>';
+  }
+}
+
+export function renderCategoryFilter() {
+  const select = document.getElementById('category-filter');
+  const categories = [...new Set(products.map(p => p.category).filter(Boolean))];
+
+  select.innerHTML = `<option value="">All Categories</option>`;
+  categories.forEach(cat => {
+    const option = document.createElement('option');
+    option.value = cat;
+    option.textContent = cat;
+    select.appendChild(option);
+  });
+
+  select.addEventListener('change', () => {
+    const selected = select.value;
+    const filtered = selected
+      ? products.filter(p => p.category === selected)
+      : products;
+    renderFilteredProducts(filtered);
+  });
+}
+
+export function setupSearch() {
+  const searchInput = document.getElementById('search-input');
+  searchInput.addEventListener('input', () => {
+    const searchTerm = searchInput.value.toLowerCase();
+    const filtered = products.filter(p =>
+      p.name.toLowerCase().includes(searchTerm) ||
+      p.description.toLowerCase().includes(searchTerm)
+    );
+    renderFilteredProducts(filtered);
+  });
+}
+
+function renderFilteredProducts(filteredList) {
+  const container = document.getElementById('product-list');
+  container.innerHTML = '';
+
+  if (filteredList.length === 0) {
+    container.innerHTML = '<p>No products found.</p>';
+    return;
+  }
+
+  filteredList.forEach(product => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+
+    card.innerHTML = `
+      <img src="${fixImageUrl(product.imageUrl)}" alt="${product.name}" class="product-img" />
+      <h3>${product.name}</h3>
+      <p>${product.description}</p>
+      <p><strong>KES ${product.price}</strong></p>
+    `;
+
+    container.appendChild(card);
+  });
+}
+

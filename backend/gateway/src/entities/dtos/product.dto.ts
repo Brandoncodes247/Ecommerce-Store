@@ -10,5 +10,7 @@ export class ProductDto implements IProduct{
     name: string;
     @ApiProperty()
     price: number;
+    @ApiProperty({required: false})
+    imageUrl: string;
 
 }
