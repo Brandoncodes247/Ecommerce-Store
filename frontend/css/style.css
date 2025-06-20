@@ -608,10 +608,19 @@ body.dark-mode .toast {
   box-shadow: 0 2px 8px rgba(30,64,175,0.07);
   font-family: 'Roboto', 'Inter', 'Segoe UI', Arial, sans-serif;
   letter-spacing: 0.03em;
+  min-width: 180px;
+  max-width: 260px;
 }
 #category-filter:focus, #category-filter:hover {
   border: 2px solid #1e40af;
   box-shadow: 0 4px 16px rgba(30,64,175,0.13);
+}
+@media (max-width: 600px) {
+  #category-filter {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
 }
 
 #categories-btn {
@@ -938,19 +947,61 @@ body.dark-mode .add-to-cart-btn:hover {
   gap: 0.5rem;
 }
 
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 0.7rem;
+  margin-bottom: 0.7rem;
+}
 .qty-btn {
   background: #f3f4f6;
   border: none;
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
-  font-size: 1.2rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1.3rem;
+  color: #2563eb;
+  font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(30,64,175,0.07);
 }
-
 .qty-btn:hover {
-  background: #e5e7eb;
+  background: #2563eb;
+  color: #fff;
+}
+.qty-value {
+  min-width: 28px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #1a2233;
+  background: #fff;
+  border-radius: 6px;
+  padding: 0.2rem 0.7rem;
+  border: 1.5px solid #bfa14a;
+  margin: 0 0.2rem;
+  user-select: none;
+}
+@media (max-width: 600px) {
+  .qty-control {
+    gap: 0.2rem;
+  }
+  .qty-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 1.1rem;
+  }
+  .qty-value {
+    min-width: 22px;
+    font-size: 1rem;
+    padding: 0.1rem 0.4rem;
+  }
 }
 
 .remove-btn {

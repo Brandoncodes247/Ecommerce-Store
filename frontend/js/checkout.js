@@ -56,15 +56,18 @@ document.addEventListener('DOMContentLoaded', function() {
   // Display cart items
   const cartItemsContainer = document.getElementById('cart-items');
   if (cartItemsContainer) {
-    cartItemsContainer.innerHTML = cart.map(item => `
-      <div class="cart-item">
-        <img src="${item.image}" alt="${item.name}">
-        <div class="cart-item-details">
-          <h3>${item.name}</h3>
-          <p>KES ${Number(item.price).toLocaleString()} × ${item.qty}</p>
+    cartItemsContainer.innerHTML = cart.map(item => {
+      const imageUrl = item.imageUrl || item.image || '';
+      return `
+        <div class="cart-item">
+          <img src="${imageUrl}" alt="${item.name}">
+          <div class="cart-item-details">
+            <h3>${item.name}</h3>
+            <p>KES ${Number(item.price).toLocaleString()} × ${item.qty}</p>
+          </div>
         </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
     console.log('checkout.js: Rendered cart items.');
   } else {
     console.error('checkout.js: Cart items container not found.');
