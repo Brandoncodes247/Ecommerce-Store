@@ -1,82 +1,132 @@
-import { getStars, showLoadingSpinner } from '../utils/ui.js';
+console.log('✅ products.js loaded');
 
-export function renderCategoryFilter() {
-  const products = app.getProducts();
-  const categories = ['All', ...Array.from(new Set(products.map(p => p.category)))];
-  const container = document.querySelector('.category-filter-container');
-  if (!container) return;
-  const selectElement = document.createElement('select');
-  selectElement.id = 'category-filter';
-  selectElement.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
-  container.innerHTML = ''; // Clear existing content
-  container.appendChild(selectElement); // Append the new select element
+import { updateCartCount } from '../utils/storage.js';
+import { showToast } from '../utils/ui.js';
 
-  selectElement.addEventListener('change', e => {
-    renderProducts(document.getElementById('search-input')?.value || '', e.target.value);
-  });
+let products = [];
+
+function fixImageUrl(url) {
+  if (!url) return '';
+  return url.replace('http://localhost:3000', 'http://localhost:3002');
 }
 
-export function renderProducts(filter = '', category = 'All') {
-  showLoadingSpinner();
-  setTimeout(() => {
-    const list = document.getElementById('product-list');
-    if (!list) return;
-    list.innerHTML = '';
-    const products = app.getProducts();
-    let filtered = products.filter(p =>
-      p.name.toLowerCase().includes(filter.toLowerCase()) &&
-      (category === 'All' || p.category === category)
-    );
-    if (filtered.length === 0) {
-      list.innerHTML = '<div class="empty-illustration">No products found.</div>';
-      return;
-    }
-    filtered.forEach(product => {
+export async function renderProducts() {
+  const container = document.getElementById('product-list');
+  container.innerHTML = '<p>Loading products...</p>';
+
+  try {
+    const res = await fetch('http://localhost:3001/api/product');
+    products = await res.json();
+    window.products = products;
+    container.innerHTML = '';
+
+    products.forEach(product => {
       const card = document.createElement('div');
       card.className = 'product-card';
+      const imageUrl = fixImageUrl(product.imageUrl || product.image || '');
+      const price = Number(product.price || 0).toLocaleString();
+
       card.innerHTML = `
-        <img src="${product.image}" alt="${product.name}">
-        ${getStars(product.rating)}
-        <h2>${product.name}</h2>
-        <p><strong>KES ${product.price.toLocaleString()}</strong></p>
-        <div class="product-info">
-          <div class="stock-status in-stock">In Stock</div>
-          <div class="dispatch-info">Free delivery by tomorrow</div>
+        <img src="${imageUrl}" alt="${product.name}" class="product-img" />
+        <h3>${product.name}</h3>
+        <p>${product.description}</p>
+        <p><strong>KES ${price}</strong></p>
+        <div class="qty-control">
+          <input type="number" id="qty-${product.id}" value="1" min="1" />
+          <button class="add-to-cart-btn" data-id="${product.id}">Add to Cart</button>
         </div>
-        <button onclick="app.addToCart(${product.id}, 1)" class="add-to-cart-btn">Add to Cart</button>
       `;
-      list.appendChild(card);
+      container.appendChild(card);
     });
-  }, 1000);
+
+    // Bind "Add to Cart" buttons
+    document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = parseInt(btn.getAttribute('data-id'));
+        const qty = parseInt(document.getElementById(`qty-${id}`).value || '1');
+        addToCart(id, qty);
+      });
+    });
+
+  } catch (error) {
+    console.error('❌ Failed to load products:', error);
+    container.innerHTML = '<p style="color:red;">Failed to load products.</p>';
+  }
 }
 
-export function openProductModal(productId) {
-  const modal = document.getElementById('product-modal');
-  const details = document.getElementById('modal-details');
-  const products = app.getProducts();
-  const product = products.find(p => p.id === productId);
-  if (!modal || !details || !product) return;
+function addToCart(productId, qty = 1) {
+  let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+  const idx = cart.findIndex(item => item.id === productId);
 
-  details.innerHTML = `
-    <img src="${product.image}" alt="${product.name}" style="width:140px;height:140px;object-fit:contain;display:block;margin:0 auto 1rem auto;">
-    <h2>${product.name}</h2>
-    ${getStars(product.rating)}
-    <p style="margin:0.5rem 0 1rem 0;">${product.desc}</p>
-    <p><strong>Price:</strong> KES ${product.price.toLocaleString()}</p>
-    <div class="product-info" style="margin: 1rem 0;">
-      <div class="stock-status in-stock">In Stock</div>
-      <div class="dispatch-info">Free delivery by tomorrow</div>
-    </div>
-    <button onclick="app.addToCart(${product.id}, 1)">Add to Cart</button>
-  `;
-  modal.style.display = 'flex';
+  if (idx > -1) {
+    cart[idx].qty += qty;
+  } else {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      cart.push({
+        ...product,
+        imageUrl: fixImageUrl(product.imageUrl || product.image || ''),
+        qty
+      });
+    } else {
+      console.error('Product not found:', productId);
+      return;
+    }
+  }
+
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartCount();
+  showToast('🛒 Product added to cart!');
 }
+
 
 export function setupSearch() {
-  const input = document.getElementById('search-input');
-  if (!input) return;
-  input.addEventListener('input', e => {
-    const category = document.getElementById('category-filter')?.value || 'All';
-    renderProducts(e.target.value, category);
+  const searchInput = document.getElementById('search-input');
+  searchInput.addEventListener('input', () => {
+    const searchTerm = searchInput.value.toLowerCase();
+    const filtered = products.filter(p =>
+      p.name.toLowerCase().includes(searchTerm) ||
+      p.description.toLowerCase().includes(searchTerm)
+    );
+    renderFilteredProducts(filtered);
   });
-} 
+}
+
+function renderFilteredProducts(filteredList) {
+  const container = document.getElementById('product-list');
+  container.innerHTML = '';
+
+  if (filteredList.length === 0) {
+    container.innerHTML = '<p>No products found.</p>';
+    return;
+  }
+
+  filteredList.forEach(product => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    const imageUrl = fixImageUrl(product.imageUrl || product.image || '');
+    const price = Number(product.price || 0).toLocaleString();
+
+    card.innerHTML = `
+      <img src="${imageUrl}" alt="${product.name}" class="product-img" />
+      <h3>${product.name}</h3>
+      <p>${product.description}</p>
+      <p><strong>KES ${price}</strong></p>
+      <div class="qty-control">
+        <input type="number" id="qty-${product.id}" value="1" min="1" />
+        <button class="add-to-cart-btn" data-id="${product.id}">Add to Cart</button>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+
+  // Rebind "Add to Cart" buttons
+  document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = parseInt(btn.getAttribute('data-id'));
+      const qty = parseInt(document.getElementById(`qty-${id}`).value || '1');
+      addToCart(id, qty);
+    });
+  });
+}
