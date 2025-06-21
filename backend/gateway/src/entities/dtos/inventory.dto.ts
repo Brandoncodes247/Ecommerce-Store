@@ -3,6 +3,7 @@ import {IInventory} from "../interfaces/inventory.interface";
 
 
 export class InventoryDto implements IInventory{
+    @ApiProperty()
     id: number;
     @ApiProperty()
     product: number;

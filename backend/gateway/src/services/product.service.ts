@@ -32,7 +32,7 @@ export class ProductService {
       this.gatewayService.send<any[]>('inventory_get_all', {})
     );
 
-    const inventoryMap = new Map(inventoryList.map(i => [i.product, i.quantity]));
+    const inventoryMap = new Map(inventoryList.map(i => [i.product.id, i.quantity]));
 
     return products.map(product => ({
       ...product,

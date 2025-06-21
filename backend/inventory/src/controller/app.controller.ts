@@ -25,7 +25,7 @@ export class AppController {
     return 'Hello World!';
   }
   @MessagePattern('inventory_get_all')
-  getAllInventory(): Promise<Inventory[]> {
+  async getAllInventory(): Promise<Inventory[]> {
     return this.appService.getAllInventory();
   }
 

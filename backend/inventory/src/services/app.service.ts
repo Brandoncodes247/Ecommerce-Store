@@ -129,11 +129,14 @@ export class InventoryService {
         }
     }
     async getAllInventory(): Promise<Inventory[]> {
-        try {
-            return await this.inventoryRepository.find();
-        } catch (e) {
-            this.logger.error(`Error fetching inventory: ${e.message}`);
-            return [];
-        }
+    try {
+        return await this.inventoryRepository.find({
+        relations: ['product'],
+        select: ['id', 'quantity', 'product']
+      });
+    } catch (error) {
+      this.logger.error(`Error fetching inventory: ${error.message}`);
+      throw new Error('Failed to fetch inventory data.');
     }
+  }
 }
