@@ -23,7 +23,7 @@ export class ProductService {
     return  this.gatewayService.send('product_delete', req)
   }
   async getAllProducts(): Promise<IProduct[]> {
-    return firstValueFrom(this.gatewayService.send<IProduct[]>('product_find_all', {}));
+    return firstValueFrom(this.gatewayService.send<IProduct[]>('product_get_all_with_inventory', {}));
   }
 }
 

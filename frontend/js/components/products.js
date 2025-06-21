@@ -25,14 +25,17 @@ export async function renderProducts() {
       card.className = 'product-card';
       const imageUrl = fixImageUrl(product.imageUrl || product.image || '');
       const price = Number(product.price || 0).toLocaleString();
+      const quantity = product.quantity ?? 'N/A';
+      const maxQtyAttr = quantity !== 'N/A' ? `max="${quantity}"` : '';
 
       card.innerHTML = `
         <img src="${imageUrl}" alt="${product.name}" class="product-img" />
         <h3>${product.name}</h3>
         <p>${product.description}</p>
         <p><strong>KES ${price}</strong></p>
+        <p>Available: ${quantity}</p>
         <div class="qty-control">
-          <input type="number" id="qty-${product.id}" value="1" min="1" />
+          <input type="number" id="qty-${product.id}" value="1" min="1" ${maxQtyAttr} />
           <button class="add-to-cart-btn" data-id="${product.id}">Add to Cart</button>
         </div>
       `;
@@ -56,29 +59,37 @@ export async function renderProducts() {
 
 function addToCart(productId, qty = 1) {
   let cart = JSON.parse(localStorage.getItem('cart') || '[]');
-  const idx = cart.findIndex(item => item.id === productId);
+  const product = products.find(p => p.id === productId);
 
-  if (idx > -1) {
-    cart[idx].qty += qty;
+  if (!product) {
+    console.error('Product not found:', productId);
+    return;
+  }
+
+  const available = product.quantity ?? Infinity;
+
+  const existingIndex = cart.findIndex(item => item.id === productId);
+  const existingQty = existingIndex > -1 ? cart[existingIndex].qty : 0;
+
+  if (existingQty + qty > available) {
+    showToast('❌ Not enough stock available');
+    return;
+  }
+
+  if (existingIndex > -1) {
+    cart[existingIndex].qty += qty;
   } else {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      cart.push({
-        ...product,
-        imageUrl: fixImageUrl(product.imageUrl || product.image || ''),
-        qty
-      });
-    } else {
-      console.error('Product not found:', productId);
-      return;
-    }
+    cart.push({
+      ...product,
+      imageUrl: fixImageUrl(product.imageUrl || product.image || ''),
+      qty
+    });
   }
 
   localStorage.setItem('cart', JSON.stringify(cart));
   updateCartCount();
   showToast('🛒 Product added to cart!');
 }
-
 
 export function setupSearch() {
   const searchInput = document.getElementById('search-input');
@@ -96,32 +107,29 @@ function renderFilteredProducts(filteredList) {
   const container = document.getElementById('product-list');
   container.innerHTML = '';
 
-  if (filteredList.length === 0) {
-    container.innerHTML = '<p>No products found.</p>';
-    return;
-  }
-
   filteredList.forEach(product => {
     const card = document.createElement('div');
     card.className = 'product-card';
     const imageUrl = fixImageUrl(product.imageUrl || product.image || '');
     const price = Number(product.price || 0).toLocaleString();
+    const quantity = product.quantity ?? 'N/A';
+    const maxQtyAttr = quantity !== 'N/A' ? `max="${quantity}"` : '';
 
     card.innerHTML = `
       <img src="${imageUrl}" alt="${product.name}" class="product-img" />
       <h3>${product.name}</h3>
       <p>${product.description}</p>
       <p><strong>KES ${price}</strong></p>
+      <p>Available: ${quantity}</p>
       <div class="qty-control">
-        <input type="number" id="qty-${product.id}" value="1" min="1" />
+        <input type="number" id="qty-${product.id}" value="1" min="1" ${maxQtyAttr} />
         <button class="add-to-cart-btn" data-id="${product.id}">Add to Cart</button>
       </div>
     `;
-
     container.appendChild(card);
   });
 
-  // Rebind "Add to Cart" buttons
+  // Rebind Add to Cart for search results
   document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = parseInt(btn.getAttribute('data-id'));
