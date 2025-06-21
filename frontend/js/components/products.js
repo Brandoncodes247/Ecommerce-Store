@@ -22,7 +22,7 @@ export async function renderProducts() {
     container.innerHTML = '';
 
     // Extract unique categories
-    allCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean));
+    allCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean)));
     const categoryFilter = document.getElementById('category-filter');
     if (categoryFilter) {
       categoryFilter.innerHTML = '<option value="">All Categories</option>' +
