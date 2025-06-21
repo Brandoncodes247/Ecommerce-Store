@@ -128,4 +128,12 @@ export class InventoryService {
             this.logger.warn('Invalid productId or quantity provided to releaseInventory.');
         }
     }
+    async getAllInventory(): Promise<Inventory[]> {
+        try {
+            return await this.inventoryRepository.find();
+        } catch (e) {
+            this.logger.error(`Error fetching inventory: ${e.message}`);
+            return [];
+        }
+    }
 }

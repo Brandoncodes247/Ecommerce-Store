@@ -3,6 +3,7 @@ import {ClientKafka} from "@nestjs/microservices";
 import {IProduct} from "../entities/interfaces/product.interface";
 import { Observable, firstValueFrom as rxjsFirstValueFrom } from 'rxjs';
 
+
 @Injectable()
 export class ProductService {
   constructor(@Inject('GATEWAY_SERVICE') private readonly gatewayService:ClientKafka) {
@@ -22,9 +23,23 @@ export class ProductService {
     // }
     return  this.gatewayService.send('product_delete', req)
   }
-  async getAllProducts(): Promise<IProduct[]> {
-    return firstValueFrom(this.gatewayService.send<IProduct[]>('product_get_all_with_inventory', {}));
+  async getAllProducts(): Promise<any[]> {
+    const products = await firstValueFrom(
+      this.gatewayService.send<any[]>('product_find_all', {})
+    );
+
+    const inventoryList = await firstValueFrom(
+      this.gatewayService.send<any[]>('inventory_get_all', {})
+    );
+
+    const inventoryMap = new Map(inventoryList.map(i => [i.product, i.quantity]));
+
+    return products.map(product => ({
+      ...product,
+      quantity: inventoryMap.get(product.id) ?? 0
+    }));
   }
+
 }
 
 function firstValueFrom<T>(observable: Observable<T>): Promise<T> {
