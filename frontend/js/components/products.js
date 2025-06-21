@@ -4,6 +4,7 @@ import { updateCartCount } from '../utils/storage.js';
 import { showToast } from '../utils/ui.js';
 
 let products = [];
+let allCategories = [];
 
 function fixImageUrl(url) {
   if (!url) return '';
@@ -20,13 +21,28 @@ export async function renderProducts() {
     window.products = products;
     container.innerHTML = '';
 
+    // Extract unique categories
+    allCategories = Array.from(new Set(products.map(p => p.category).filter(Boolean));
+    const categoryFilter = document.getElementById('category-filter');
+    if (categoryFilter) {
+      categoryFilter.innerHTML = '<option value="">All Categories</option>' +
+        allCategories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+      categoryFilter.onchange = function() {
+        const selected = this.value;
+        if (!selected) {
+          renderFilteredProducts(products);
+        } else {
+          renderFilteredProducts(products.filter(p => p.category === selected));
+        }
+      };
+    }
+
     products.forEach(product => {
       const card = document.createElement('div');
       card.className = 'product-card';
       const imageUrl = fixImageUrl(product.imageUrl || product.image || '');
       const price = Number(product.price || 0).toLocaleString();
       const quantity = product.quantity ?? 'N/A';
-      const maxQtyAttr = quantity !== 'N/A' ? `max="${quantity}"` : '';
 
       card.innerHTML = `
         <img src="${imageUrl}" alt="${product.name}" class="product-img" />
@@ -35,18 +51,33 @@ export async function renderProducts() {
         <p><strong>KES ${price}</strong></p>
         <p>Available: ${quantity}</p>
         <div class="qty-control">
-          <input type="number" id="qty-${product.id}" value="1" min="1" ${maxQtyAttr} />
+          <button class="qty-btn minus" aria-label="Decrease quantity" data-id="${product.id}">-</button>
+          <span id="qty-${product.id}" class="qty-value">1</span>
+          <button class="qty-btn plus" aria-label="Increase quantity" data-id="${product.id}">+</button>
           <button class="add-to-cart-btn" data-id="${product.id}">Add to Cart</button>
         </div>
       `;
       container.appendChild(card);
     });
 
-    // Bind "Add to Cart" buttons
+    // Bind plus/minus and Add to Cart buttons
+    document.querySelectorAll('.qty-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = btn.getAttribute('data-id');
+        const qtySpan = document.getElementById(`qty-${id}`);
+        let qty = parseInt(qtySpan.textContent);
+        if (btn.classList.contains('plus')) {
+          qty++;
+        } else if (btn.classList.contains('minus')) {
+          qty = Math.max(1, qty - 1);
+        }
+        qtySpan.textContent = qty;
+      });
+    });
     document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.getAttribute('data-id'));
-        const qty = parseInt(document.getElementById(`qty-${id}`).value || '1');
+        const qty = parseInt(document.getElementById(`qty-${id}`).textContent || '1');
         addToCart(id, qty);
       });
     });
@@ -113,7 +144,6 @@ function renderFilteredProducts(filteredList) {
     const imageUrl = fixImageUrl(product.imageUrl || product.image || '');
     const price = Number(product.price || 0).toLocaleString();
     const quantity = product.quantity ?? 'N/A';
-    const maxQtyAttr = quantity !== 'N/A' ? `max="${quantity}"` : '';
 
     card.innerHTML = `
       <img src="${imageUrl}" alt="${product.name}" class="product-img" />
@@ -122,18 +152,33 @@ function renderFilteredProducts(filteredList) {
       <p><strong>KES ${price}</strong></p>
       <p>Available: ${quantity}</p>
       <div class="qty-control">
-        <input type="number" id="qty-${product.id}" value="1" min="1" ${maxQtyAttr} />
+        <button class="qty-btn minus" aria-label="Decrease quantity" data-id="${product.id}">-</button>
+        <span id="qty-${product.id}" class="qty-value">1</span>
+        <button class="qty-btn plus" aria-label="Increase quantity" data-id="${product.id}">+</button>
         <button class="add-to-cart-btn" data-id="${product.id}">Add to Cart</button>
       </div>
     `;
     container.appendChild(card);
   });
 
-  // Rebind Add to Cart for search results
+  // Rebind plus/minus and Add to Cart buttons
+  document.querySelectorAll('.qty-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const id = btn.getAttribute('data-id');
+      const qtySpan = document.getElementById(`qty-${id}`);
+      let qty = parseInt(qtySpan.textContent);
+      if (btn.classList.contains('plus')) {
+        qty++;
+      } else if (btn.classList.contains('minus')) {
+        qty = Math.max(1, qty - 1);
+      }
+      qtySpan.textContent = qty;
+    });
+  });
   document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const id = parseInt(btn.getAttribute('data-id'));
-      const qty = parseInt(document.getElementById(`qty-${id}`).value || '1');
+      const qty = parseInt(document.getElementById(`qty-${id}`).textContent || '1');
       addToCart(id, qty);
     });
   });

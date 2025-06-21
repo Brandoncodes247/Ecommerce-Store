@@ -14,4 +14,5 @@ window.app = {
   showToast,
   renderProducts,
   setCart,
+  // Add any other global functions needed
 }; 

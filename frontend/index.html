@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>E-Commerce Store</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
   <header>
@@ -28,60 +29,61 @@
   </section>
   <main>
     <div class="search-bar-container">
-      <input type="text" id="search-input" placeholder="Search products...">
+      <input type="text" id="search-input" name="search" placeholder="Search products...">
     </div>
     <div class="category-filter-container">
-      <button id="categories-btn">Categories</button>
-      <select id="category-filter"></select>
+      <select id="category-filter" aria-label="Filter by category">
+        <option value="">All Categories</option>
+      </select>
     </div>
     <section class="product-grid" id="product-list">
       <!-- Product cards will be rendered here by JavaScript -->
     </section>
   </main>
-  <div id="product-modal" class="modal" style="display:none;">
+  <div id="product-modal" class="modal" style="display:none;" role="dialog" aria-modal="true">
     <div class="modal-content">
-      <span id="close-modal" class="close-modal">&times;</span>
+      <span id="close-modal" class="close-modal" aria-label="Close">&times;</span>
       <div id="modal-details"></div>
     </div>
   </div>
   <div id="toast-container"></div>
-  <div id="auth-modal" class="modal" style="display:none;">
+  <div id="auth-modal" class="modal" style="display:none;" role="dialog" aria-modal="true">
     <div class="modal-content auth-modal-content">
-      <span id="close-auth-modal" class="close-modal">&times;</span>
+      <span id="close-auth-modal" class="close-modal" aria-label="Close">&times;</span>
       <div class="auth-tabs">
-        <button class="auth-tab active" data-tab="login">Login</button>
-        <button class="auth-tab" data-tab="signup">Sign Up</button>
+        <button class="auth-tab active" data-tab="login" type="button">Login</button>
+        <button class="auth-tab" data-tab="signup" type="button">Sign Up</button>
       </div>
       <div id="login-form" class="auth-form">
-        <form>
+        <form action="#" method="post" autocomplete="on">
           <label>
             Email
-            <input type="email" required placeholder="Enter your email">
+            <input type="email" name="email" required placeholder="Enter your email" autocomplete="email">
           </label>
           <label>
             Password
-            <input type="password" required placeholder="Enter your password">
+            <input type="password" name="password" required placeholder="Enter your password" autocomplete="current-password">
           </label>
           <button type="submit" class="auth-submit-btn">Login</button>
         </form>
       </div>
       <div id="signup-form" class="auth-form" style="display: none;">
-        <form>
+        <form action="#" method="post" autocomplete="on">
           <label>
             Full Name
-            <input type="text" required placeholder="Enter your full name">
+            <input type="text" name="fullname" required placeholder="Enter your full name" autocomplete="name">
           </label>
           <label>
             Email
-            <input type="email" required placeholder="Enter your email">
+            <input type="email" name="email" required placeholder="Enter your email" autocomplete="email">
           </label>
           <label>
             Password
-            <input type="password" required placeholder="Create a password">
+            <input type="password" name="password" required placeholder="Create a password" autocomplete="new-password">
           </label>
           <label>
             Confirm Password
-            <input type="password" required placeholder="Confirm your password">
+            <input type="password" name="confirm_password" required placeholder="Confirm your password" autocomplete="new-password">
           </label>
           <button type="submit" class="auth-submit-btn">Sign Up</button>
         </form>

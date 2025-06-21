@@ -18,6 +18,9 @@ import { updateCartCount } from './utils/storage.js';
 import { showToast } from './utils/ui.js';
 import './utils/global.js'; // global utilities
 
+// Expose cart functions globally for cart page button onclick handlers
+import * as cart from './components/cart.js';
+
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🛠️ Initializing application...');
 
@@ -94,6 +97,27 @@ document.addEventListener('DOMContentLoaded', () => {
   // ✅ Checkout Page Auth Check
   if (window.location.pathname.includes('checkout.html')) {
     checkAuthForCheckout();
+  }
+
+  // Cart page: Add event listeners for clear cart and checkout buttons
+  const clearCartBtn = document.getElementById('clear-cart-btn');
+  if (clearCartBtn) {
+    clearCartBtn.addEventListener('click', () => {
+      window.app.setCart([]);
+      window.app.renderCart();
+      window.app.showToast('Cart cleared!');
+    });
+  }
+  const checkoutBtn = document.getElementById('checkout-btn');
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', () => {
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      if (!cart.length) {
+        window.app.showToast('Your cart is empty!', 'error');
+        return;
+      }
+      window.location.href = 'checkout.html';
+    });
   }
 
   console.log('✅ App initialized successfully');
