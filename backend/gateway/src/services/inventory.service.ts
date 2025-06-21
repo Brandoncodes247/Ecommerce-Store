@@ -22,4 +22,6 @@ export class InventoryService {
       this.gatewayService.send<IInventory[]>('inventory_get_all', {})
     );
   }
+  
+
 }
