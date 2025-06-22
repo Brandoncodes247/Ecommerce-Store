@@ -1,4 +1,3 @@
-// order-item.entity.ts
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Order } from './order.entities';
 
@@ -16,6 +15,6 @@ export class OrderItem {
   @Column()
   quantity: number;
 
-  @Column({ type: 'decimal' })
+  @Column()
   price: number;
 }

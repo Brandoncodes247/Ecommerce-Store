@@ -1,13 +1,13 @@
-// src/entities/dtos/order-item.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
 
 export class OrderItemDto {
-  @ApiProperty()
+  @ApiProperty({ example: 1, description: 'Product ID' })
   productId: number;
 
-  @ApiProperty()
+  @ApiProperty({ example: 2, description: 'Quantity of the product' })
   quantity: number;
 
-  @ApiProperty()
+  @ApiProperty({ example: 1500, description: 'Unit price of the product' })
   price: number;
 }
+

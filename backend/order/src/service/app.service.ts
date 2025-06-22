@@ -104,7 +104,13 @@ export class OrderService {
 
         if (!payment || payment.status !== true) {
           payment = await firstValueFrom(
-            this.orderBrokerServices.send('payment_create', { orderId, amount })
+            this.orderBrokerServices.send('payment_create', {
+              orderId,
+              amount,
+              method: 'Mpesa', // Customize as needed based on payment form
+              currency: 'KES',
+              customerId: `cust-${orderId}`
+            })
           );
         }
 
@@ -129,4 +135,4 @@ export class OrderService {
   async onOrderFailure(orderId: number) {
     await this.orderRepository.update({ id: orderId }, { status: OrderStatus.FAILED });
   }
-} 
+}
