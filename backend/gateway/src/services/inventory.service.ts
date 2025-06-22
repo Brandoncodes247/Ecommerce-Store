@@ -17,6 +17,13 @@ export class InventoryService {
   async releaseInventory(productId: number, quantity: number) {
     return this.gatewayService.emit('inventory_release', {productId, quantity});
   }
+  async reserveBatchInventory(orderId: number, items: { productId: number; quantity: number; price: number }[]) {
+    return this.gatewayService.emit('inventory_batch_reserve', { orderId, items });
+  }
+
+  // inventory.controller.ts
+
+
   async getAllInventory(): Promise<IInventory[]> {
     return firstValueFrom(
       this.gatewayService.send<IInventory[]>('inventory_get_all', {})

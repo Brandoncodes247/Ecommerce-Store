@@ -4,27 +4,29 @@ import { OrderService } from '../services/order.service';
 import { OrderDto } from '../entities/dtos/order.dto';
 import { ClientKafka } from '@nestjs/microservices';
 
-@Controller('order')
+@Controller('order') // base path is /order
 export class OrderController {
   constructor(
     @Inject() private orderService: OrderService,
     @Inject('GATEWAY_SERVICE') private readonly client: ClientKafka
   ) {}
 
-  @Post('Order')
+  @Post() // this maps to POST /order
   @ApiBody({ type: OrderDto })
   async createOrder(@Body() req: OrderDto) {
     return await this.orderService.createOrder(req);
   }
 
-  @Get('order/:id')
+  @Get(':id') // this maps to GET /order/:id
   async getOrderStatus(@Param('id') orderId: number) {
     return this.orderService.getOrderStatus(orderId);
   }
 
-  onModuleInit() {
+  async onModuleInit() {
     this.client.subscribeToResponseOf('order_create');
     this.client.subscribeToResponseOf('order_get_status');
-    this.client.connect();
+
+    await this.client.connect();
   }
 }
+

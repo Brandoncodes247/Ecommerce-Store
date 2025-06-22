@@ -34,12 +34,14 @@ export class InventoryController {
     async getAllInventory() {
         return await this.inventoryService.getAllInventory();
     }
+    
 
-    onModuleInit() {
+    async onModuleInit() {
         this.client.subscribeToResponseOf('inventory_create');
         this.client.subscribeToResponseOf('inventory_release');
         this.client.subscribeToResponseOf('inventory_get_all');
-        this.client.connect()
+        this.client.subscribeToResponseOf('inventory_reserve');
+        await this.client.connect();
 
     }
 

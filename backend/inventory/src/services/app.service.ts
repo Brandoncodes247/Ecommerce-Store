@@ -129,14 +129,39 @@ export class InventoryService {
         }
     }
     async getAllInventory(): Promise<Inventory[]> {
-    try {
-        return await this.inventoryRepository.find({
-        relations: ['product'],
-        select: ['id', 'quantity', 'product']
-      });
-    } catch (error) {
-      this.logger.error(`Error fetching inventory: ${error.message}`);
-      throw new Error('Failed to fetch inventory data.');
+        try {
+            return await this.inventoryRepository.find({
+            relations: ['product'],
+            select: ['id', 'quantity', 'product']
+        });
+        } catch (error) {
+        this.logger.error(`Error fetching inventory: ${error.message}`);
+        throw new Error('Failed to fetch inventory data.');
+        }
     }
-  }
+    async reserveBatchInventory(
+        orderId: number, 
+        items: { productId: number; quantity: number; price: number }[]
+        ) {
+        try {
+            for (const item of items) {
+            await this.inventoryRepository.decrement(
+                { product: { id: item.productId } }, 
+                'quantity', 
+                item.quantity
+            );
+            }
+
+            await this.inventoryBrokerServices.emit('order_payment', {
+            orderId,
+            amount: items.reduce((total, item) => total + item.price * item.quantity, 0)
+            });
+
+            return { success: true };
+        } catch (err) {
+            console.error(`Failed to reserve inventory for order ${orderId}:`, err);
+            await this.inventoryBrokerServices.emit('order_failed', { orderId });
+            return { success: false, error: err.message };
+        }
+    }
 }

@@ -31,10 +31,11 @@ export class PaymentController {
         return await this.paymentService.getAllPayments();
     }
 
-    onModuleInit() {
+    async onModuleInit() {
         this.client.subscribeToResponseOf('payment_create');
         this.client.subscribeToResponseOf('payment_update');
         this.client.subscribeToResponseOf('payment_delete');
         this.client.subscribeToResponseOf('payment_get_all');
+        await this.client.connect();
     }
 }

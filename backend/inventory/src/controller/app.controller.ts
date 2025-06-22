@@ -1,6 +1,6 @@
 import { Controller } from '@nestjs/common';
 import { InventoryService } from '../services/app.service';
-import {EventPattern, MessagePattern,} from "@nestjs/microservices";
+import {EventPattern, MessagePattern, Payload,} from "@nestjs/microservices";
 import {IOrder} from "../entities/interface/order.interface";
 import {Inventory} from "../entities/inventory.entity";
 
@@ -29,5 +29,12 @@ export class AppController {
   async getAllInventory(): Promise<Inventory[]> {
     return this.appService.getAllInventory();
   }
+    // inventory.controller.ts
+  @EventPattern('inventory_batch_reserve')
+  async handleInventoryBatch(@Payload() data: { orderId: number; items: { productId: number; quantity: number; price: number }[] }) {
+    return this.appService.reserveBatchInventory(data.orderId, data.items);
+  }
+
 
 }
+
