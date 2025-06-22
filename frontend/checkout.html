@@ -1,10 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Checkout</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .autocomplete-suggestions {
+      border: 1px solid #ccc;
+      max-height: 150px;
+      overflow-y: auto;
+      position: absolute;
+      background: white;
+      z-index: 10;
+      width: 100%;
+    }
+    .autocomplete-suggestions div {
+      padding: 8px;
+      cursor: pointer;
+    }
+    .autocomplete-suggestions div:hover {
+      background-color: #f0f0f0;
+    }
+    .relative-wrapper {
+      position: relative;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -21,12 +42,15 @@
     <div class="checkout-sections">
       <section class="shipping-payment-section">
         <h2>Shipping Information</h2>
-        <form id="shipping-form">
+        <form id="shipping-form" autocomplete="off">
           <label for="fullName">Full Name:</label>
           <input type="text" id="fullName" name="fullName" required>
 
           <label for="address">Address:</label>
-          <input type="text" id="address" name="address" required>
+          <div class="relative-wrapper">
+            <input type="text" id="address" name="address" required placeholder="Start typing your address..." />
+            <div id="address-suggestions" class="autocomplete-suggestions"></div>
+          </div>
 
           <label for="city">City:</label>
           <input type="text" id="city" name="city" required>
@@ -43,13 +67,16 @@
             <input type="radio" id="creditCard" name="paymentMethod" value="creditCard">
             <label for="creditCard">Credit Card</label>
           </div>
+
           <div id="mpesa-details" class="payment-details active">
             <label for="mpesaNumber">M-Pesa Number:</label>
             <input type="text" id="mpesaNumber" placeholder="e.g., 0712345678" required>
           </div>
+
           <div id="paypal-details" class="payment-details">
             <p>You will be redirected to PayPal to complete your purchase.</p>
           </div>
+
           <div id="creditCard-details" class="payment-details">
             <label for="cardNumber">Card Number:</label>
             <input type="text" id="cardNumber" placeholder="XXXX XXXX XXXX XXXX" required>
@@ -63,9 +90,7 @@
 
       <section class="order-summary">
         <h2>Your Order</h2>
-        <div id="cart-items" class="cart-items-summary">
-          <!-- Cart items will be rendered here by JavaScript -->
-        </div>
+        <div id="cart-items" class="cart-items-summary"></div>
         <div class="checkout-summary-details">
           <p>Subtotal: <span id="subtotal-amount">KES 0.00</span></p>
           <p>Shipping: <span id="shipping-amount">KES 500.00</span></p>
@@ -85,5 +110,41 @@
 
   <script type="module" src="js/main.js"></script>
   <script type="module" src="js/checkout.js"></script>
+  <script>
+    const addressInput = document.getElementById('address');
+    const suggestionsBox = document.getElementById('address-suggestions');
+
+    let debounceTimer;
+    addressInput.addEventListener('input', function () {
+      clearTimeout(debounceTimer);
+      const query = this.value.trim();
+      if (query.length < 3) {
+        suggestionsBox.innerHTML = '';
+        return;
+      }
+      debounceTimer = setTimeout(() => {
+        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&addressdetails=1&limit=5`)
+          .then(res => res.json())
+          .then(data => {
+            suggestionsBox.innerHTML = '';
+            data.forEach(item => {
+              const div = document.createElement('div');
+              div.textContent = item.display_name;
+              div.onclick = () => {
+                addressInput.value = item.display_name;
+                suggestionsBox.innerHTML = '';
+              };
+              suggestionsBox.appendChild(div);
+            });
+          });
+      }, 400);
+    });
+
+    document.addEventListener('click', function (e) {
+      if (!addressInput.contains(e.target) && !suggestionsBox.contains(e.target)) {
+        suggestionsBox.innerHTML = '';
+      }
+    });
+  </script>
 </body>
-</html> 
+</html>

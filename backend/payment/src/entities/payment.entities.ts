@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
 
 @Entity()
 export class Payment {
@@ -11,11 +11,14 @@ export class Payment {
   @Column()
   amount: number;
 
-  @Column()
+  @Column({ default: true })
+  status: boolean;
+
+  @Column({ nullable: true })
   currency: string;
 
-  @Column()
-  method: string; // e.g., Mpesa, card, bank_transfer
+  @Column({ nullable: true })
+  method: string;
 
   @Column({ nullable: true })
   description: string;
@@ -23,6 +26,10 @@ export class Payment {
   @Column({ nullable: true })
   customerId: string;
 
-  @Column({ default: false })
-  status: boolean;
+  @Column({ nullable: true })
+  transactionId: string;
 }
+
+  
+
+

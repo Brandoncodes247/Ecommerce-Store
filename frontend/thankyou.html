@@ -1,34 +1,48 @@
+<!-- thankyou.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Thank You</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding-top: 50px;
-    }
-    .thank-you {
-      font-size: 24px;
-      margin-bottom: 20px;
-    }
-    .status {
-      font-size: 18px;
-      margin-bottom: 40px;
-    }
-    .btn {
-      padding: 10px 20px;
-      background: #007bff;
-      color: white;
-      text-decoration: none;
-      border-radius: 6px;
-    }
-  </style>
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="thank-you">🎉 Thank you for your order!</div>
-  <div class="status">We're processing your order. You will receive a confirmation soon.</div>
-  <a href="index.html" class="btn">Continue Shopping</a>
+  <header>
+    <h1>🎉 Thank You for Your Purchase!</h1>
+    <nav>
+      <a href="index.html" class="primary-btn">← Back to Shop</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="thank-you">
+      <p>Your order has been placed.</p>
+      <p id="order-status">Checking your order status...</p>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2025 My E-Commerce Store
+  </footer>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = localStorage.getItem('lastOrderId') || urlParams.get('orderId');
+
+    if (orderId) {
+      fetch(`http://localhost:3001/api/order/${orderId}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('order-status').innerText = `Order Status: ${data.status}`;
+        })
+        .catch(err => {
+          document.getElementById('order-status').innerText = 'Error fetching status.';
+          console.error(err);
+        });
+    } else {
+      document.getElementById('order-status').innerText = 'Order ID not found.';
+    }
+  </script>
 </body>
 </html>
+

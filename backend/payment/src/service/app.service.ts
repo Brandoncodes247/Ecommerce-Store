@@ -14,34 +14,33 @@ export class PaymentService {
 
   // Simulate payment process
   async processPayment(
-    orderId: number,
-    amount: number,
-    method = 'Mpesa',
-    currency = 'KES',
-    description = '',
-    customerId = ''
-    ) {
-        const random = Math.random();
-    if (random < 0.2) {
-        return { error: `Payment for order ${orderId} failed due to insufficient funds` };
-    } else if (random < 0.4) {
-        await this.simulateTimeout(5000);
-        return { error: `Payment for order ${orderId} timed out` };
-    }
+  orderId: number,
+  amount: number,
+  method = 'Mpesa',
+  currency = 'KES',
+  description = '',
+  customerId = ''
+) {
+  const payment = this.paymentRepository.create({
+    orderId,
+    amount,
+    currency,
+    method,
+    description,
+    customerId,
+    status: true,
+    transactionId: 'TX-' + Date.now(), // Optional: add tracking
+  });
 
-    const payment = this.paymentRepository.create({
-        orderId,
-        amount,
-        currency,
-        method,
-        description,
-        customerId,
-        status: true,
-    });
-    await this.paymentRepository.save(payment);
+  await this.paymentRepository.save(payment);
 
-    return { success: true, message: `Payment for order ${orderId} processed successfully` };
+  return {
+    success: true,
+    message: `Payment for order ${orderId} processed successfully`,
+    transactionId: payment.transactionId,
+  };
 }
+
 
 
   async paymentInquiry(orderId: number) {

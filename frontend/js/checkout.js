@@ -1,4 +1,4 @@
-// ✅ checkout.js — Updated to support batch orders + payments
+// ✅ checkout.js — Updated to support batch orders + payments with validation and order status tracking
 import { getCart, setCart, updateCartCount } from './utils/storage.js';
 import { showToast } from './utils/ui.js';
 import { checkAuthForCheckout } from './components/auth.js';
@@ -82,17 +82,25 @@ document.addEventListener('DOMContentLoaded', function () {
 
     showToast('Processing your order...', 'info');
 
+    const validItems = cart.map(item => ({
+      productId: parseInt(item.id),
+      quantity: parseInt(item.qty),
+      price: parseFloat(item.price)
+    })).filter(item =>
+      !isNaN(item.productId) &&
+      !isNaN(item.quantity) &&
+      !isNaN(item.price)
+    );
+
     const orderPayload = {
-      items: cart.map(item => ({
-        productId: item.id,
-        quantity: item.qty,
-        price: parseFloat(item.price)
-      })),
-      totalAmount: total
+      items: validItems,
+      totalAmount: validItems.reduce((acc, item) => acc + item.price * item.quantity, 0) + shipping + tax
     };
 
+    console.log("Sending order payload:", orderPayload);
+
     try {
-      const response = await fetch('http://localhost:3001/api/order/Order', {
+      const response = await fetch('http://localhost:3001/api/order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderPayload)
@@ -101,19 +109,18 @@ document.addEventListener('DOMContentLoaded', function () {
       if (response.ok) {
         const result = await response.json();
         showToast('✅ Order placed successfully!', 'success');
-        console.log('Order created:', result);
-
+        console.log('Order response:', result);
+        localStorage.setItem('lastOrderId', result.id);
         setCart([]);
         updateCartCount();
-
         setTimeout(() => {
-          window.location.href = `thankyou.html?orderId=${result.id}`;
+          window.location.href = 'thankyou.html';
         }, 2000);
       } else {
         showToast('❌ Order failed. Try again.', 'error');
       }
     } catch (err) {
-      console.error('checkout.js: order placement error:', err);
+      console.error('Order error:', err);
       showToast('❌ Network error during order.', 'error');
     }
   });
