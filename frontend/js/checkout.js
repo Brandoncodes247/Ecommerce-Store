@@ -1,142 +1,139 @@
+// checkout.js
 import { getCart, setCart, updateCartCount } from './utils/storage.js';
 import { showToast } from './utils/ui.js';
 import { checkAuthForCheckout } from './components/auth.js';
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
   console.log('checkout.js: DOMContentLoaded - Initializing checkout page.');
-  // Ensure the user is logged in before proceeding with checkout
+
   if (!checkAuthForCheckout()) {
-    console.log('checkout.js: User not authenticated, redirecting to index.html.');
-    // checkAuthForCheckout will display toast and auth modal
-    // We'll also redirect after a short delay to allow the toast/modal to show
-    setTimeout(() => {
-      window.location.href = 'index.html';
-    }, 2000);
+    showToast('Please log in to continue checkout.', 'error');
+    setTimeout(() => (window.location.href = 'index.html'), 2000);
     return;
   }
 
-  // Get cart data
   const cart = getCart();
   console.log('checkout.js: Initial cart content:', cart);
 
   if (!cart || cart.length === 0) {
     showToast('Your cart is empty. Redirecting to shopping page.', 'info');
-    console.log('checkout.js: Cart is empty, redirecting to index.html.');
-    setTimeout(() => {
-      window.location.href = 'index.html';
-    }, 2000);
+    setTimeout(() => (window.location.href = 'index.html'), 2000);
     return;
   }
 
-  // Calculate total
+  // Calculate totals
   let subtotal = 0;
   cart.forEach(item => {
     const price = parseFloat(item.price);
     const qty = parseInt(item.qty);
-    
-    if (!isNaN(price) && !isNaN(qty)) {
-      subtotal += price * qty;
-    } else {
-      console.warn(`checkout.js: Skipping item ${item.name} due to invalid price or quantity.`);
-    }
+    if (!isNaN(price) && !isNaN(qty)) subtotal += price * qty;
   });
 
-  // Add shipping and tax
-  const shipping = 500; // Fixed shipping cost
-  const tax = Math.round(subtotal * 0.16); // 16% tax
+  const shipping = 500;
+  const tax = Math.round(subtotal * 0.16);
   const total = subtotal + shipping + tax;
 
-  // Display summary amounts
   document.getElementById('subtotal-amount').textContent = `KES ${subtotal.toLocaleString()}`;
   document.getElementById('shipping-amount').textContent = `KES ${shipping.toLocaleString()}`;
   document.getElementById('tax-amount').textContent = `KES ${tax.toLocaleString()}`;
   document.getElementById('total-amount').textContent = `KES ${total.toLocaleString()}`;
-  console.log('checkout.js: Final calculated total:', total);
 
-  // Display cart items
   const cartItemsContainer = document.getElementById('cart-items');
   if (cartItemsContainer) {
-    cartItemsContainer.innerHTML = cart.map(item => {
-      const imageUrl = item.imageUrl || item.image || '';
-      return `
-        <div class="cart-item">
-          <img src="${imageUrl}" alt="${item.name}">
-          <div class="cart-item-details">
-            <h3>${item.name}</h3>
-            <p>KES ${Number(item.price).toLocaleString()} × ${item.qty}</p>
+    cartItemsContainer.innerHTML = cart
+      .map(item => {
+        const imageUrl = item.imageUrl || item.image || '';
+        return `
+          <div class="cart-item">
+            <img src="${imageUrl}" alt="${item.name}">
+            <div class="cart-item-details">
+              <h3>${item.name}</h3>
+              <p>KES ${Number(item.price).toLocaleString()} × ${item.qty}</p>
+            </div>
           </div>
-        </div>
-      `;
-    }).join('');
-    console.log('checkout.js: Rendered cart items.');
-  } else {
-    console.error('checkout.js: Cart items container not found.');
+        `;
+      })
+      .join('');
   }
 
-  // Handle payment method selection
+  // Handle payment method UI toggle
   document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-      console.log('checkout.js: Payment method changed to:', this.value);
-      document.querySelectorAll('.payment-details').forEach(detailDiv => {
-        detailDiv.classList.remove('active');
-      });
+    radio.addEventListener('change', function () {
+      document.querySelectorAll('.payment-details').forEach(div => div.classList.remove('active'));
       document.getElementById(this.value + '-details').classList.add('active');
     });
   });
 
-  // Handle payment
-  document.getElementById('pay-button').addEventListener('click', function(e) {
+  // Handle Pay Now button
+  document.getElementById('pay-button').addEventListener('click', async function (e) {
     e.preventDefault();
-    console.log('checkout.js: Pay Now button clicked.');
-    
-    // Basic validation for shipping form
+
     const shippingForm = document.getElementById('shipping-form');
     const inputs = shippingForm.querySelectorAll('input[required]');
     let allFieldsFilled = true;
+
     inputs.forEach(input => {
-      // Check if the input is visible or part of a hidden payment details section
-      const parentPaymentDetails = input.closest('.payment-details');
-      const isPaymentDetailHidden = parentPaymentDetails && !parentPaymentDetails.classList.contains('active');
+      const parent = input.closest('.payment-details');
+      const hidden = parent && !parent.classList.contains('active');
 
-      console.log(`Validating input: ${input.id || input.name}, Type: ${input.type}, Is Hidden Payment Detail: ${isPaymentDetailHidden}, Current Value: '${input.value}'`); // More detailed log
-
-      if (isPaymentDetailHidden) {
-        // Skip validation for hidden payment details
-        input.classList.remove('error'); // Ensure no error styling remains from previous attempts
-        console.log(`Skipping hidden payment detail: ${input.id || input.name}`); // Log skipped fields
+      if (hidden) {
+        input.classList.remove('error');
         return;
       }
 
       if (input.type === 'radio') {
-        const radioGroup = document.querySelectorAll(`input[name="${input.name}"]`);
-        if (!Array.from(radioGroup).some(radio => radio.checked)) {
+        const group = document.querySelectorAll(`input[name="${input.name}"]`);
+        if (![...group].some(r => r.checked)) {
           allFieldsFilled = false;
-          console.log(`Validation error: Radio group ${input.name} has no selection.`); // Log radio error
         }
       } else if (!input.value.trim()) {
         allFieldsFilled = false;
         input.classList.add('error');
-        console.log(`Validation error: Visible field ${input.id || input.name} is empty.`); // Log empty visible field
       } else {
         input.classList.remove('error');
-        console.log(`Validation success: ${input.id || input.name} is filled.`); // Log successful validation
       }
     });
 
     if (!allFieldsFilled) {
       showToast('Please fill in all required details.', 'error');
-      console.log('Validation failed: allFieldsFilled is false.'); // Log final validation status
       return;
     }
 
-    showToast('Processing payment...', 'info');
+    showToast('Processing your order...', 'info');
+
+    const cart = getCart();
+    for (const item of cart) {
+      const order = {
+        product: {
+          id: item.id,
+          price: item.price
+        },
+        quantity: item.qty
+      };
+
+      try {
+        const res = await fetch('http://localhost:3001/api/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(order)
+        });
+
+        if (res.ok) {
+          showToast(`✅ Order placed for ${item.name}`, 'success');
+        } else {
+          showToast(`❌ Failed to place order for ${item.name}`, 'error');
+        }
+      } catch (err) {
+        console.error(`Error placing order for ${item.name}:`, err);
+        showToast('❌ Network error while placing order.', 'error');
+      }
+    }
+
+    // Finalize checkout
+    setCart([]);
+    updateCartCount();
     setTimeout(() => {
-      showToast('Payment successful!', 'success');
-      setCart([]);
-      updateCartCount();
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 2000);
+      window.location.href = 'thankyou.html';
     }, 2000);
   });
-}); 
+});
