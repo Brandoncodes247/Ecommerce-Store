@@ -64,6 +64,18 @@
       background: #1e40af;
       transform: translateY(-2px);
     }
+    .receipt-product-img {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: #f8f9fa;
+      border: 1.5px solid #e6e6e6;
+      margin-right: 0.7rem;
+      vertical-align: middle;
+      box-shadow: 0 1px 4px rgba(30,64,175,0.07);
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
@@ -90,7 +102,15 @@
         <table class="receipt-items">
           <thead><tr><th>Product</th><th>Qty</th><th>Price</th></tr></thead>
           <tbody>
-            ${items.map(item => `<tr><td>${item.name}</td><td>${item.qty}</td><td>KES ${Number(item.price).toLocaleString()}</td></tr>`).join('')}
+            ${items.map(item => {
+              let imageUrl = item.imageUrl || item.image || '';
+              if (!imageUrl) imageUrl = 'https://via.placeholder.com/96x96?text=No+Image';
+              return `<tr>
+                <td><img src="${imageUrl}" alt="${item.name}" class="receipt-product-img">${item.name}</td>
+                <td>${item.qty}</td>
+                <td>KES ${Number(item.price).toLocaleString()}</td>
+              </tr>`;
+            }).join('')}
           </tbody>
         </table>
         <div class="receipt-total">Total: ${receipt.total}</div>
