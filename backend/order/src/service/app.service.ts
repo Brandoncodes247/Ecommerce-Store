@@ -135,4 +135,14 @@ export class OrderService {
   async onOrderFailure(orderId: number) {
     await this.orderRepository.update({ id: orderId }, { status: OrderStatus.FAILED });
   }
+
+  async getOrderById(orderId: number): Promise<Order> {
+    return this.orderRepository.findOne({
+      where: { id: orderId },
+      relations: ['items'], // this is important
+    });
+  }
+
+
+
 }

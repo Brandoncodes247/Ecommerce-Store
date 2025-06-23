@@ -84,4 +84,5 @@ export class ProductController {
   async getAllProductsWithInventory() {
     return await this.appService.getAllProducts(); // Request to Kafka
   }
+
 }

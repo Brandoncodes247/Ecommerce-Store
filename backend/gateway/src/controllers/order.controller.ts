@@ -17,16 +17,19 @@ export class OrderController {
     return await this.orderService.createOrder(req);
   }
 
-  @Get(':id') // this maps to GET /order/:id
-  async getOrderStatus(@Param('id') orderId: number) {
-    return this.orderService.getOrderStatus(orderId);
-  }
 
   async onModuleInit() {
     this.client.subscribeToResponseOf('order_create');
-    this.client.subscribeToResponseOf('order_get_status');
+    this.client.subscribeToResponseOf('order_payment');
+    this.client.subscribeToResponseOf('order_failed');
+    this.client.subscribeToResponseOf('order_get_by_id');
 
     await this.client.connect();
   }
+  @Get(':orderId') // this maps to GET /order/:orderId
+  async getOrderById(@Param('orderId') orderId: number) {
+    return await this.orderService.getOrderById(orderId);
+  }
+
 }
 
