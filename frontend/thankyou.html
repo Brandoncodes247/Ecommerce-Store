@@ -16,29 +16,6 @@
       border: 2.5px solid #bfa14a;
       animation: fadeInReceipt 0.7s cubic-bezier(0.4,0,0.2,1);
     }
-    body.dark-mode .receipt-container {
-      background: #232b3a;
-      color: #e3e9f7;
-      border-color: #2d3748;
-    }
-    body.dark-mode .receipt-header,
-    body.dark-mode .receipt-info,
-    body.dark-mode .receipt-items th,
-    body.dark-mode .receipt-items td,
-    body.dark-mode .receipt-total {
-      color: #e3e9f7 !important;
-    }
-    body.dark-mode .receipt-total {
-      color: #bfa14a !important;
-    }
-    body.dark-mode .back-to-shop-btn {
-      background: #2563eb;
-      color: #fff;
-    }
-    body.dark-mode .back-to-shop-btn:hover {
-      background: #60a5fa;
-      color: #181f2a;
-    }
     @keyframes fadeInReceipt {
       from { opacity: 0; transform: translateY(40px); }
       to { opacity: 1; transform: translateY(0); }
@@ -61,17 +38,6 @@
     .receipt-items th, .receipt-items td {
       padding: 0.4rem 0.7rem;
       text-align: left;
-    }
-    .receipt-product-img {
-      width: 96px;
-      height: 96px;
-      object-fit: contain;
-      border-radius: 8px;
-      background: #f8f9fa;
-      border: 1.5px solid #e6e6e6;
-      margin-right: 0.7rem;
-      vertical-align: middle;
-      box-shadow: 0 1px 4px rgba(30,64,175,0.07);
     }
     .receipt-total {
       font-size: 1.2rem;
@@ -102,7 +68,6 @@
 </head>
 <body>
   <div class="receipt-container" id="receipt-container">
-    <!-- Receipt will be rendered here by JS -->
   </div>
   <script>
     function renderReceipt() {
@@ -125,14 +90,7 @@
         <table class="receipt-items">
           <thead><tr><th>Product</th><th>Qty</th><th>Price</th></tr></thead>
           <tbody>
-            ${items.map(item => {
-              const imageUrl = item.imageUrl || item.image || '';
-              return `<tr>
-                <td><img src="${imageUrl}" alt="${item.name}" class="receipt-product-img">${item.name}</td>
-                <td>${item.qty}</td>
-                <td>KES ${Number(item.price).toLocaleString()}</td>
-              </tr>`;
-            }).join('')}
+            ${items.map(item => `<tr><td>${item.name}</td><td>${item.qty}</td><td>KES ${Number(item.price).toLocaleString()}</td></tr>`).join('')}
           </tbody>
         </table>
         <div class="receipt-total">Total: ${receipt.total}</div>
