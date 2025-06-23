@@ -1,0 +1,48 @@
+<!-- thankyou.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Thank You</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>🎉 Thank You for Your Purchase!</h1>
+    <nav>
+      <a href="index.html" class="primary-btn">← Back to Shop</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="thank-you">
+      <p>Your order has been placed.</p>
+      <p id="order-status">Checking your order status...</p>
+    </section>
+  </main>
+
+  <footer>
+    &copy; 2025 My E-Commerce Store
+  </footer>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderId = localStorage.getItem('lastOrderId') || urlParams.get('orderId');
+
+    if (orderId) {
+      fetch(`http://localhost:3001/api/order/${orderId}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('order-status').innerText = `Order Status: ${data.status}`;
+        })
+        .catch(err => {
+          document.getElementById('order-status').innerText = 'Error fetching status.';
+          console.error(err);
+        });
+    } else {
+      document.getElementById('order-status').innerText = 'Order ID not found.';
+    }
+  </script>
+</body>
+</html>
+

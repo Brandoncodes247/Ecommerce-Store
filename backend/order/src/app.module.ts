@@ -7,6 +7,7 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { OrderLog } from './entities/log.entity';
 import { Order } from './entities/order.entities';
 import { Product } from './entities/product.entity';
+import { OrderItem } from './entities/order-item.entity'; // ✅ Added
 
 @Module({
   imports: [
@@ -26,11 +27,10 @@ import { Product } from './entities/product.entity';
         entities: [__dirname + '/**/*.entity{.ts,.js}'],
         synchronize: true,
         autoLoadEntities: true,
-        // Removed empty options object
       }),
       inject: [ConfigService],
     }),
-    TypeOrmModule.forFeature([OrderLog, Order, Product]),
+    TypeOrmModule.forFeature([OrderLog, Order, Product, OrderItem]), // ✅ Included OrderItem
     ClientsModule.registerAsync({
       clients: [
         {
@@ -47,10 +47,6 @@ import { Product } from './entities/product.entity';
               consumer: {
                 groupId: 'order-group',
               },
-              // Uncomment if you need custom partitioner
-              // producer: {
-              //   createPartitioner: Partitioners.DefaultPartitioner
-              // }
             },
           }),
         },

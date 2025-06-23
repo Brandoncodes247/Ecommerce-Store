@@ -1,40 +1,55 @@
-import {Injectable} from '@nestjs/common';
-import {Repository} from "typeorm";
-import {Payment} from "../entities/payment.entities";
-import {InjectRepository} from "@nestjs/typeorm";
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Payment } from '../entities/payment.entities';
 
 @Injectable()
 export class PaymentService {
-    constructor(@InjectRepository(Payment) private paymentRepository: Repository<Payment>) {
-    }
+  private readonly logger = new Logger(PaymentService.name);
 
-    //simulate a random failure, timeout, or success
-    async processPayment(orderId: number, amount: number) {
-        const random = Math.random();
-        if (random < 0.2) {
-            return {
-                error: `Payment for order ${orderId} failed due to insufficient funds`
-            }
+  constructor(
+    @InjectRepository(Payment)
+    private readonly paymentRepository: Repository<Payment>
+  ) {}
 
-        } else if (random >= 0.2 && random < 0.4) {
-            await this.simulateTimeout(5000);
-            return {error: `Payment for order ${orderId} timed out`}
-        }
-        const payment = new Payment()
-        payment.orderId = orderId
-        payment.amount = amount
-        payment.status = true
-        await this.paymentRepository.save(payment)
-        return {
-            success: true, message: `Payment for order ${orderId} processed successfully`
-        };
-    }
+  // Simulate payment process
+  async processPayment(
+  orderId: number,
+  amount: number,
+  method = 'Mpesa',
+  currency = 'KES',
+  description = '',
+  customerId = ''
+) {
+  const payment = this.paymentRepository.create({
+    orderId,
+    amount,
+    currency,
+    method,
+    description,
+    customerId,
+    status: true,
+    transactionId: 'TX-' + Date.now(), // Optional: add tracking
+  });
 
-    async paymentInquiry(orderId: number) {
-        return this.paymentRepository.findOne({where: {orderId}})
-    }
+  await this.paymentRepository.save(payment);
 
-    private async simulateTimeout(duration: number): Promise<unknown> {
-        return new Promise((resolve) => setTimeout(resolve, duration));
-    }
+  return {
+    success: true,
+    message: `Payment for order ${orderId} processed successfully`,
+    transactionId: payment.transactionId,
+  };
 }
+
+
+
+  async paymentInquiry(orderId: number) {
+    this.logger.log(`🔍 Checking payment status for Order ID ${orderId}`);
+    return this.paymentRepository.findOne({ where: { orderId } });
+  }
+
+  private async simulateTimeout(duration: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, duration));
+  }
+}
+

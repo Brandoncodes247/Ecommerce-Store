@@ -6,6 +6,7 @@ import {ApiBody} from "@nestjs/swagger";
 import {ProductDto} from "../entities/dtos/product.dto";
 import {Kafka} from "kafkajs";
 
+
 @Controller('product')
 export class ProductController {
   admin
@@ -80,7 +81,7 @@ export class ProductController {
     return await this.appService.deleteProduct(req);
   }
   @Get()
-  async getAllProducts() {
-    return await this.client.send('product_find_all', {}); // Request to Kafka
+  async getAllProductsWithInventory() {
+    return await this.appService.getAllProducts(); // Request to Kafka
   }
 }

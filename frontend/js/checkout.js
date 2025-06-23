@@ -1,59 +1,38 @@
+// ✅ checkout.js — Updated to support batch orders + payments with validation and order status tracking
 import { getCart, setCart, updateCartCount } from './utils/storage.js';
 import { showToast } from './utils/ui.js';
 import { checkAuthForCheckout } from './components/auth.js';
 
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('checkout.js: DOMContentLoaded - Initializing checkout page.');
-  // Ensure the user is logged in before proceeding with checkout
+document.addEventListener('DOMContentLoaded', function () {
   if (!checkAuthForCheckout()) {
-    console.log('checkout.js: User not authenticated, redirecting to index.html.');
-    // checkAuthForCheckout will display toast and auth modal
-    // We'll also redirect after a short delay to allow the toast/modal to show
-    setTimeout(() => {
-      window.location.href = 'index.html';
-    }, 2000);
+    showToast('Please log in to continue checkout.', 'error');
+    setTimeout(() => (window.location.href = 'index.html'), 2000);
     return;
   }
 
-  // Get cart data
   const cart = getCart();
-  console.log('checkout.js: Initial cart content:', cart);
-
   if (!cart || cart.length === 0) {
-    showToast('Your cart is empty. Redirecting to shopping page.', 'info');
-    console.log('checkout.js: Cart is empty, redirecting to index.html.');
-    setTimeout(() => {
-      window.location.href = 'index.html';
-    }, 2000);
+    showToast('Your cart is empty. Redirecting...', 'info');
+    setTimeout(() => (window.location.href = 'index.html'), 2000);
     return;
   }
 
-  // Calculate total
   let subtotal = 0;
   cart.forEach(item => {
     const price = parseFloat(item.price);
     const qty = parseInt(item.qty);
-    
-    if (!isNaN(price) && !isNaN(qty)) {
-      subtotal += price * qty;
-    } else {
-      console.warn(`checkout.js: Skipping item ${item.name} due to invalid price or quantity.`);
-    }
+    if (!isNaN(price) && !isNaN(qty)) subtotal += price * qty;
   });
 
-  // Add shipping and tax
-  const shipping = 500; // Fixed shipping cost
-  const tax = Math.round(subtotal * 0.16); // 16% tax
+  const shipping = 500;
+  const tax = Math.round(subtotal * 0.16);
   const total = subtotal + shipping + tax;
 
-  // Display summary amounts
   document.getElementById('subtotal-amount').textContent = `KES ${subtotal.toLocaleString()}`;
   document.getElementById('shipping-amount').textContent = `KES ${shipping.toLocaleString()}`;
   document.getElementById('tax-amount').textContent = `KES ${tax.toLocaleString()}`;
   document.getElementById('total-amount').textContent = `KES ${total.toLocaleString()}`;
-  console.log('checkout.js: Final calculated total:', total);
 
-  // Display cart items
   const cartItemsContainer = document.getElementById('cart-items');
   if (cartItemsContainer) {
     cartItemsContainer.innerHTML = cart.map(item => {
@@ -68,75 +47,81 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
       `;
     }).join('');
-    console.log('checkout.js: Rendered cart items.');
-  } else {
-    console.error('checkout.js: Cart items container not found.');
   }
 
-  // Handle payment method selection
   document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-    radio.addEventListener('change', function() {
-      console.log('checkout.js: Payment method changed to:', this.value);
-      document.querySelectorAll('.payment-details').forEach(detailDiv => {
-        detailDiv.classList.remove('active');
-      });
+    radio.addEventListener('change', function () {
+      document.querySelectorAll('.payment-details').forEach(div => div.classList.remove('active'));
       document.getElementById(this.value + '-details').classList.add('active');
     });
   });
 
-  // Handle payment
-  document.getElementById('pay-button').addEventListener('click', function(e) {
+  document.getElementById('pay-button').addEventListener('click', async function (e) {
     e.preventDefault();
-    console.log('checkout.js: Pay Now button clicked.');
-    
-    // Basic validation for shipping form
+
     const shippingForm = document.getElementById('shipping-form');
     const inputs = shippingForm.querySelectorAll('input[required]');
     let allFieldsFilled = true;
+
     inputs.forEach(input => {
-      // Check if the input is visible or part of a hidden payment details section
-      const parentPaymentDetails = input.closest('.payment-details');
-      const isPaymentDetailHidden = parentPaymentDetails && !parentPaymentDetails.classList.contains('active');
-
-      console.log(`Validating input: ${input.id || input.name}, Type: ${input.type}, Is Hidden Payment Detail: ${isPaymentDetailHidden}, Current Value: '${input.value}'`); // More detailed log
-
-      if (isPaymentDetailHidden) {
-        // Skip validation for hidden payment details
-        input.classList.remove('error'); // Ensure no error styling remains from previous attempts
-        console.log(`Skipping hidden payment detail: ${input.id || input.name}`); // Log skipped fields
-        return;
-      }
-
-      if (input.type === 'radio') {
-        const radioGroup = document.querySelectorAll(`input[name="${input.name}"]`);
-        if (!Array.from(radioGroup).some(radio => radio.checked)) {
-          allFieldsFilled = false;
-          console.log(`Validation error: Radio group ${input.name} has no selection.`); // Log radio error
-        }
-      } else if (!input.value.trim()) {
-        allFieldsFilled = false;
+      const parent = input.closest('.payment-details');
+      const hidden = parent && !parent.classList.contains('active');
+      if (hidden) return;
+      if (!input.value.trim()) {
         input.classList.add('error');
-        console.log(`Validation error: Visible field ${input.id || input.name} is empty.`); // Log empty visible field
+        allFieldsFilled = false;
       } else {
         input.classList.remove('error');
-        console.log(`Validation success: ${input.id || input.name} is filled.`); // Log successful validation
       }
     });
 
     if (!allFieldsFilled) {
       showToast('Please fill in all required details.', 'error');
-      console.log('Validation failed: allFieldsFilled is false.'); // Log final validation status
       return;
     }
 
-    showToast('Processing payment...', 'info');
-    setTimeout(() => {
-      showToast('Payment successful!', 'success');
-      setCart([]);
-      updateCartCount();
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 2000);
-    }, 2000);
+    showToast('Processing your order...', 'info');
+
+    const validItems = cart.map(item => ({
+      productId: parseInt(item.id),
+      quantity: parseInt(item.qty),
+      price: parseFloat(item.price)
+    })).filter(item =>
+      !isNaN(item.productId) &&
+      !isNaN(item.quantity) &&
+      !isNaN(item.price)
+    );
+
+    const orderPayload = {
+      items: validItems,
+      totalAmount: validItems.reduce((acc, item) => acc + item.price * item.quantity, 0) + shipping + tax
+    };
+
+    console.log("Sending order payload:", orderPayload);
+
+    try {
+      const response = await fetch('http://localhost:3001/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderPayload)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        showToast('✅ Order placed successfully!', 'success');
+        console.log('Order response:', result);
+        localStorage.setItem('lastOrderId', result.id);
+        setCart([]);
+        updateCartCount();
+        setTimeout(() => {
+          window.location.href = 'thankyou.html';
+        }, 2000);
+      } else {
+        showToast('❌ Order failed. Try again.', 'error');
+      }
+    } catch (err) {
+      console.error('Order error:', err);
+      showToast('❌ Network error during order.', 'error');
+    }
   });
-}); 
+});

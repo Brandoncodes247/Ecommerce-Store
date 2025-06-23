@@ -1,7 +1,7 @@
 export interface PaymentDetails {
     amount: number;
     currency: string;
-    method: 'credit_card' | 'paypal' | 'bank_transfer';
+    method: 'credit_card' | 'paypal' | 'bank_transfer'|'Mpesa';
     description?: string;
     customerId?: string;
 }
