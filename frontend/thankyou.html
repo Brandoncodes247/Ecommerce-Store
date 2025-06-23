@@ -1,10 +1,9 @@
-<!-- thankyou.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Thank You</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <header>
@@ -18,31 +17,60 @@
     <section class="thank-you">
       <p>Your order has been placed.</p>
       <p id="order-status">Checking your order status...</p>
+      <p>Date: <span id="order-date">...</span></p>
+      <p>Total: <span id="order-total">...</span></p>
+
+      <h2>Ordered Items</h2>
+      <div id="ordered-products" class="cart-items-summary"></div>
     </section>
   </main>
 
-  <footer>
-    &copy; 2025 My E-Commerce Store
-  </footer>
+  <footer>&copy; 2025 My E-Commerce Store</footer>
 
-  <script>
+  <script type="module">
+    import { loadProducts, productMap } from './js/data/productCache.js';
+
     const urlParams = new URLSearchParams(window.location.search);
     const orderId = localStorage.getItem('lastOrderId') || urlParams.get('orderId');
 
-    if (orderId) {
-      fetch(`http://localhost:3001/api/order/${orderId}`)
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById('order-status').innerText = `Order Status: ${data.status}`;
-        })
-        .catch(err => {
-          document.getElementById('order-status').innerText = 'Error fetching status.';
-          console.error(err);
-        });
-    } else {
-      document.getElementById('order-status').innerText = 'Order ID not found.';
+    async function renderOrderDetails() {
+      if (!orderId) {
+        document.getElementById('order-status').innerText = 'Order ID not found.';
+        return;
+      }
+
+      try {
+        await loadProducts(); // fetch product data
+
+        const res = await fetch(`http://localhost:3001/api/order/${orderId}`);
+        const data = await res.json();
+
+        document.getElementById('order-status').innerText = `Order Status: ${data.status}`;
+        document.getElementById('order-date').innerText = new Date(data.createdAt).toLocaleString();
+        document.getElementById('order-total').innerText = `KES ${Number(data.totalAmount).toLocaleString()}`;
+
+        const container = document.getElementById('ordered-products');
+        container.innerHTML = data.items.map(item => {
+          const product = productMap.get(item.productId);
+          const imageUrl = product?.imageUrl?.replace('http://localhost:3000', 'http://localhost:3002') || '';
+          return `
+            <div class="cart-item">
+              <img src="${imageUrl}" alt="${product?.name || 'Product'}" />
+              <div class="cart-item-details">
+                <h3>${product?.name || 'Unknown Product'}</h3>
+                <p>Quantity: ${item.quantity}</p>
+                <p>Price: KES ${item.price}</p>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+        document.getElementById('order-status').innerText = 'Error retrieving order.';
+      }
     }
+
+    renderOrderDetails();
   </script>
 </body>
 </html>
-

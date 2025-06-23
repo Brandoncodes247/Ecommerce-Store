@@ -13,10 +13,6 @@ export class OrderService {
     return this.gatewayService.send('order_create', req);
   }
 
-  async getOrderStatus(orderId: number) {
-    return this.gatewayService.send('order_get_status', orderId);
-  }
-
   async onOrderPayment(orderId: number, amount: number) {
     return this.gatewayService.send('order_payment', { orderId, amount });
   }
@@ -24,4 +20,8 @@ export class OrderService {
   async onOrderFailure(orderId: number) {
     return this.gatewayService.send('order_failed', { orderId });
   }
+  async getOrderById(orderId: number) {
+    return this.gatewayService.send('order_get_by_id', orderId);
+  }
+
 }
