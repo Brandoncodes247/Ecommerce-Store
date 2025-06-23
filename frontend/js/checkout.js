@@ -49,79 +49,38 @@ document.addEventListener('DOMContentLoaded', function () {
     }).join('');
   }
 
-  document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
-    radio.addEventListener('change', function () {
-      document.querySelectorAll('.payment-details').forEach(div => div.classList.remove('active'));
-      document.getElementById(this.value + '-details').classList.add('active');
-    });
-  });
+  // Display user profile info
+  const profileSummary = document.getElementById('checkout-profile-summary');
+  if (profileSummary) {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    profileSummary.innerHTML = `
+      <div><strong>Full Name:</strong> ${user.fullname || '<span style=\'color:red\'>Not set</span>'}</div>
+      <div><strong>Address:</strong> ${user.address || '<span style=\'color:red\'>Not set</span>'}</div>
+      <div><strong>Payment Method:</strong> ${user.paymentMethod ? user.paymentMethod.charAt(0).toUpperCase() + user.paymentMethod.slice(1) : '<span style=\'color:red\'>Not set</span>'}</div>
+    `;
+  }
 
-  document.getElementById('pay-button').addEventListener('click', async function (e) {
+  // Handle payment
+  document.getElementById('pay-button').addEventListener('click', function(e) {
     e.preventDefault();
-
-    const shippingForm = document.getElementById('shipping-form');
-    const inputs = shippingForm.querySelectorAll('input[required]');
-    let allFieldsFilled = true;
-
-    inputs.forEach(input => {
-      const parent = input.closest('.payment-details');
-      const hidden = parent && !parent.classList.contains('active');
-      if (hidden) return;
-      if (!input.value.trim()) {
-        input.classList.add('error');
-        allFieldsFilled = false;
-      } else {
-        input.classList.remove('error');
-      }
-    });
-
-    if (!allFieldsFilled) {
-      showToast('Please fill in all required details.', 'error');
-      return;
-    }
-
-    showToast('Processing your order...', 'info');
-
-    const validItems = cart.map(item => ({
-      productId: parseInt(item.id),
-      quantity: parseInt(item.qty),
-      price: parseFloat(item.price)
-    })).filter(item =>
-      !isNaN(item.productId) &&
-      !isNaN(item.quantity) &&
-      !isNaN(item.price)
-    );
-
-    const orderPayload = {
-      items: validItems,
-      totalAmount: validItems.reduce((acc, item) => acc + item.price * item.quantity, 0) + shipping + tax
-    };
-
-    console.log("Sending order payload:", orderPayload);
-
-    try {
-      const response = await fetch('http://localhost:3001/api/order', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload)
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        showToast('✅ Order placed successfully!', 'success');
-        console.log('Order response:', result);
-        localStorage.setItem('lastOrderId', result.id);
-        setCart([]);
-        updateCartCount();
-        setTimeout(() => {
-          window.location.href = 'thankyou.html';
-        }, 2000);
-      } else {
-        showToast('❌ Order failed. Try again.', 'error');
-      }
-    } catch (err) {
-      console.error('Order error:', err);
-      showToast('❌ Network error during order.', 'error');
-    }
+    showToast('Processing payment...', 'info');
+    setTimeout(() => {
+      showToast('Payment successful!', 'success');
+      // Save receipt info
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      const cart = getCart();
+      const receipt = {
+        user,
+        cart,
+        date: new Date().toLocaleString(),
+        total: document.getElementById('total-amount').textContent
+      };
+      localStorage.setItem('lastReceipt', JSON.stringify(receipt));
+      setCart([]);
+      updateCartCount();
+      setTimeout(() => {
+        window.location.href = 'thankyou.html';
+      }, 2000);
+    }, 2000);
   });
 });

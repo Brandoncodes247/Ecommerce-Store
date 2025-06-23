@@ -18,6 +18,7 @@
           <span id="cart-count" class="cart-badge">0</span>
         </a>
       </nav>
+      <button id="profile-btn" title="Profile" class="profile-btn">👤</button>
       <button id="dark-mode-toggle" title="Toggle dark mode">🌙</button>
     </div>
   </header>
@@ -30,11 +31,6 @@
   <main>
     <div class="search-bar-container">
       <input type="text" id="search-input" name="search" placeholder="Search products...">
-    </div>
-    <div class="category-filter-container">
-      <select id="category-filter" aria-label="Filter by category">
-        <option value="">All Categories</option>
-      </select>
     </div>
     <section class="product-grid" id="product-list">
       <!-- Product cards will be rendered here by JavaScript -->
@@ -90,9 +86,35 @@
       </div>
     </div>
   </div>
+  <div id="profile-modal" class="modal" style="display:none;" role="dialog" aria-modal="true">
+    <div class="modal-content profile-modal-content">
+      <span id="close-profile-modal" class="close-modal" aria-label="Close">&times;</span>
+      <h2>User Profile</h2>
+      <form id="profile-form">
+        <label>
+          Full Name
+          <input type="text" id="profile-fullname" name="fullname" required placeholder="Enter your full name">
+        </label>
+        <label>
+          Address
+          <input type="text" id="profile-address" name="address" required placeholder="Enter your address">
+        </label>
+        <label>
+          Payment Method
+          <select id="profile-payment-method" name="paymentMethod" required>
+            <option value="mpesa">M-Pesa</option>
+            <option value="paypal">PayPal</option>
+            <option value="creditCard">Credit Card</option>
+          </select>
+        </label>
+        <button type="submit" class="profile-save-btn">Save</button>
+      </form>
+    </div>
+  </div>
   <footer>
     &copy; 2025 My E-Commerce Store. All rights reserved.
   </footer>
   <script type="module" src="js/main.js?v=2"></script>
+  <script type="module" src="js/profile.js"></script>
 </body>
 </html> 

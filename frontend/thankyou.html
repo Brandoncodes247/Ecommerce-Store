@@ -1,76 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Thank You</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thank You for Your Order!</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .receipt-container {
+      max-width: 480px;
+      margin: 3rem auto;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 32px rgba(191,161,74,0.13);
+      padding: 2.5rem 2rem 2rem 2rem;
+      border: 2.5px solid #bfa14a;
+      animation: fadeInReceipt 0.7s cubic-bezier(0.4,0,0.2,1);
+    }
+    body.dark-mode .receipt-container {
+      background: #232b3a;
+      color: #e3e9f7;
+      border-color: #2d3748;
+    }
+    body.dark-mode .receipt-header,
+    body.dark-mode .receipt-info,
+    body.dark-mode .receipt-items th,
+    body.dark-mode .receipt-items td,
+    body.dark-mode .receipt-total {
+      color: #e3e9f7 !important;
+    }
+    body.dark-mode .receipt-total {
+      color: #bfa14a !important;
+    }
+    body.dark-mode .back-to-shop-btn {
+      background: #2563eb;
+      color: #fff;
+    }
+    body.dark-mode .back-to-shop-btn:hover {
+      background: #60a5fa;
+      color: #181f2a;
+    }
+    @keyframes fadeInReceipt {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .receipt-header {
+      text-align: center;
+      color: #2563eb;
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1.2rem;
+    }
+    .receipt-info {
+      margin-bottom: 1.2rem;
+      font-size: 1.08rem;
+      color: #1a2233;
+    }
+    .receipt-items {
+      margin-bottom: 1.2rem;
+    }
+    .receipt-items th, .receipt-items td {
+      padding: 0.4rem 0.7rem;
+      text-align: left;
+    }
+    .receipt-product-img {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      border-radius: 8px;
+      background: #f8f9fa;
+      border: 1.5px solid #e6e6e6;
+      margin-right: 0.7rem;
+      vertical-align: middle;
+      box-shadow: 0 1px 4px rgba(30,64,175,0.07);
+    }
+    .receipt-total {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #bfa14a;
+      text-align: right;
+      margin-top: 1.2rem;
+    }
+    .back-to-shop-btn {
+      display: block;
+      margin: 2rem auto 0 auto;
+      background: #2563eb;
+      color: #fff;
+      border: none;
+      border-radius: 25px;
+      padding: 0.9rem 2.2rem;
+      font-size: 1.15rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      box-shadow: 0 2px 8px rgba(30,64,175,0.09);
+    }
+    .back-to-shop-btn:hover {
+      background: #1e40af;
+      transform: translateY(-2px);
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>🎉 Thank You for Your Purchase!</h1>
-    <nav>
-      <a href="index.html" class="primary-btn">← Back to Shop</a>
-    </nav>
-  </header>
-
-  <main>
-    <section class="thank-you">
-      <p>Your order has been placed.</p>
-      <p id="order-status">Checking your order status...</p>
-      <p>Date: <span id="order-date">...</span></p>
-      <p>Total: <span id="order-total">...</span></p>
-
-      <h2>Ordered Items</h2>
-      <div id="ordered-products" class="cart-items-summary"></div>
-    </section>
-  </main>
-
-  <footer>&copy; 2025 My E-Commerce Store</footer>
-
-  <script type="module">
-    import { loadProducts, productMap } from './js/data/productCache.js';
-
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderId = localStorage.getItem('lastOrderId') || urlParams.get('orderId');
-
-    async function renderOrderDetails() {
-      if (!orderId) {
-        document.getElementById('order-status').innerText = 'Order ID not found.';
+  <div class="receipt-container" id="receipt-container">
+    <!-- Receipt will be rendered here by JS -->
+  </div>
+  <script>
+    function renderReceipt() {
+      const receipt = JSON.parse(localStorage.getItem('lastReceipt') || '{}');
+      if (!receipt || !receipt.user || !receipt.cart) {
+        document.getElementById('receipt-container').innerHTML = '<div class="receipt-header">No recent order found.</div>';
         return;
       }
-
-      try {
-        await loadProducts(); // fetch product data
-
-        const res = await fetch(`http://localhost:3001/api/order/${orderId}`);
-        const data = await res.json();
-
-        document.getElementById('order-status').innerText = `Order Status: ${data.status}`;
-        document.getElementById('order-date').innerText = new Date(data.createdAt).toLocaleString();
-        document.getElementById('order-total').innerText = `KES ${Number(data.totalAmount).toLocaleString()}`;
-
-        const container = document.getElementById('ordered-products');
-        container.innerHTML = data.items.map(item => {
-          const product = productMap.get(item.productId);
-          const imageUrl = product?.imageUrl?.replace('http://localhost:3000', 'http://localhost:3002') || '';
-          return `
-            <div class="cart-item">
-              <img src="${imageUrl}" alt="${product?.name || 'Product'}" />
-              <div class="cart-item-details">
-                <h3>${product?.name || 'Unknown Product'}</h3>
-                <p>Quantity: ${item.quantity}</p>
-                <p>Price: KES ${item.price}</p>
-              </div>
-            </div>
-          `;
-        }).join('');
-      } catch (err) {
-        console.error(err);
-        document.getElementById('order-status').innerText = 'Error retrieving order.';
-      }
+      const user = receipt.user;
+      const items = receipt.cart;
+      const initials = user.fullname ? user.fullname.split(' ').map(n => n[0]).join('').toUpperCase() : (user.name ? user.name[0].toUpperCase() : '?');
+      document.getElementById('receipt-container').innerHTML = `
+        <div class="receipt-header">Thank You, ${initials}!</div>
+        <div class="receipt-info">
+          <div><strong>Date:</strong> ${receipt.date}</div>
+          <div><strong>Full Name:</strong> ${user.fullname || ''}</div>
+          <div><strong>Address:</strong> ${user.address || ''}</div>
+          <div><strong>Payment Method:</strong> ${user.paymentMethod ? user.paymentMethod.charAt(0).toUpperCase() + user.paymentMethod.slice(1) : ''}</div>
+        </div>
+        <table class="receipt-items">
+          <thead><tr><th>Product</th><th>Qty</th><th>Price</th></tr></thead>
+          <tbody>
+            ${items.map(item => {
+              const imageUrl = item.imageUrl || item.image || '';
+              return `<tr>
+                <td><img src="${imageUrl}" alt="${item.name}" class="receipt-product-img">${item.name}</td>
+                <td>${item.qty}</td>
+                <td>KES ${Number(item.price).toLocaleString()}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+        <div class="receipt-total">Total: ${receipt.total}</div>
+        <button class="back-to-shop-btn" onclick="window.location.href='index.html'">Back to Shop</button>
+      `;
     }
-
-    renderOrderDetails();
+    renderReceipt();
   </script>
 </body>
 </html>

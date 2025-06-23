@@ -5,7 +5,9 @@ export function updateAuthButton() {
   const user = JSON.parse(localStorage.getItem('user'));
   if (loginBtn) {
     if (user) {
-      loginBtn.textContent = `Welcome, ${user.name}`;
+      // Show initials only
+      const initials = user.fullname ? user.fullname.split(' ').map(n => n[0]).join('').toUpperCase() : (user.name ? user.name[0].toUpperCase() : '?');
+      loginBtn.textContent = `Welcome, ${initials}`;
       loginBtn.onclick = logout;
     } else {
       loginBtn.textContent = 'Login / Sign Up';
@@ -20,7 +22,23 @@ export function handleLogin(event) {
   const email = form.querySelector('input[type="email"]').value;
   const password = form.querySelector('input[type="password"]').value;
 
-  const user = { name: email.split('@')[0], email };
+  // Prompt for profile if not set
+  let user = JSON.parse(localStorage.getItem('user') || 'null');
+  if (!user || !user.fullname || !user.address || !user.paymentMethod) {
+    // Show profile modal and save after
+    window.openProfileModalForAuth = function(profile) {
+      user = { name: email.split('@')[0], email, ...profile };
+      localStorage.setItem('user', JSON.stringify(user));
+      updateAuthButton();
+      document.getElementById('auth-modal').style.display = 'none';
+      showToast('Successfully logged in!');
+      window.openProfileModalForAuth = null;
+    };
+    document.getElementById('auth-modal').style.display = 'none';
+    document.getElementById('profile-modal').style.display = 'flex';
+    document.getElementById('profile-modal').classList.add('show');
+    return;
+  }
   localStorage.setItem('user', JSON.stringify(user));
   updateAuthButton();
   document.getElementById('auth-modal').style.display = 'none';
@@ -40,7 +58,22 @@ export function handleSignup(event) {
     return;
   }
 
-  const user = { name, email };
+  // Prompt for profile if not set
+  let user = JSON.parse(localStorage.getItem('user') || 'null');
+  if (!user || !user.fullname || !user.address || !user.paymentMethod) {
+    window.openProfileModalForAuth = function(profile) {
+      user = { name, email, ...profile };
+      localStorage.setItem('user', JSON.stringify(user));
+      updateAuthButton();
+      document.getElementById('auth-modal').style.display = 'none';
+      showToast('Successfully signed up!');
+      window.openProfileModalForAuth = null;
+    };
+    document.getElementById('auth-modal').style.display = 'none';
+    document.getElementById('profile-modal').style.display = 'flex';
+    document.getElementById('profile-modal').classList.add('show');
+    return;
+  }
   localStorage.setItem('user', JSON.stringify(user));
   updateAuthButton();
   document.getElementById('auth-modal').style.display = 'none';
