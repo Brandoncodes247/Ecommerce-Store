@@ -1,64 +1,95 @@
-import { showToast } from '../utils/ui.js';
+// js/auth.js
+import { auth } from './firebase-config.js';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-export function updateAuthButton() {
-  const loginBtn = document.getElementById('login-btn');
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (loginBtn) {
-    if (user) {
-      loginBtn.textContent = `Welcome, ${user.name}`;
-      loginBtn.onclick = logout;
-    } else {
-      loginBtn.textContent = 'Login / Sign Up';
-      loginBtn.onclick = () => document.getElementById('auth-modal').style.display = 'flex';
+import { showToast } from './utils/ui.js'; // or adjust the path if different
+
+class Auth {
+  constructor() {
+    this.loginBtn = document.getElementById('login-btn');
+    this.authModal = document.getElementById('auth-modal');
+    this.loginForm = document.getElementById('login-form');
+    this.signupForm = document.getElementById('signup-form');
+
+    // Auth state listener
+    onAuthStateChanged(auth, (user) => this.updateAuthButton(user));
+
+    if (this.loginForm) {
+      this.loginForm.addEventListener('submit', (e) => this.handleLogin(e));
+    }
+
+    if (this.signupForm) {
+      this.signupForm.addEventListener('submit', (e) => this.handleSignup(e));
     }
   }
-}
 
-export function handleLogin(event) {
-  event.preventDefault();
-  const form = event.target;
-  const email = form.querySelector('input[type="email"]').value;
-  const password = form.querySelector('input[type="password"]').value;
-
-  const user = { name: email.split('@')[0], email };
-  localStorage.setItem('user', JSON.stringify(user));
-  updateAuthButton();
-  document.getElementById('auth-modal').style.display = 'none';
-  showToast('Successfully logged in!');
-}
-
-export function handleSignup(event) {
-  event.preventDefault();
-  const form = event.target;
-  const name = form.querySelector('input[type="text"]').value;
-  const email = form.querySelector('input[type="email"]').value;
-  const password = form.querySelectorAll('input[type="password"]')[0].value;
-  const confirmPassword = form.querySelectorAll('input[type="password"]')[1].value;
-
-  if (password !== confirmPassword) {
-    showToast('Passwords do not match!', 'error');
-    return;
+  updateAuthButton(user) {
+    if (this.loginBtn) {
+      if (user) {
+        this.loginBtn.textContent = `Welcome, ${user.email.split('@')[0]}`;
+        this.loginBtn.onclick = () => this.logout();
+      } else {
+        this.loginBtn.textContent = 'Login / Sign Up';
+        this.loginBtn.onclick = () => {
+          if (this.authModal) this.authModal.style.display = 'flex';
+        };
+      }
+    }
   }
 
-  const user = { name, email };
-  localStorage.setItem('user', JSON.stringify(user));
-  updateAuthButton();
-  document.getElementById('auth-modal').style.display = 'none';
-  showToast('Successfully signed up!');
-}
+  handleLogin(event) {
+    event.preventDefault();
+    const email = this.loginForm.querySelector('input[type="email"]').value;
+    const password = this.loginForm.querySelector('input[type="password"]').value;
 
-export function logout() {
-  localStorage.removeItem('user');
-  updateAuthButton();
-  showToast('Successfully logged out!');
-}
-
-export function checkAuthForCheckout() {
-  const user = JSON.parse(localStorage.getItem('user'));
-  if (!user) {
-    showToast('Please login to checkout', 'error');
-    document.getElementById('auth-modal').style.display = 'flex';
-    return false;
+    signInWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        this.authModal.style.display = 'none';
+        showToast("Logged in!");
+      })
+      .catch(err => showToast(err.message, 'error'));
   }
-  return true;
-} 
+
+  handleSignup(event) {
+    event.preventDefault();
+    const name = this.signupForm.querySelector('input[type="text"]').value;
+    const email = this.signupForm.querySelector('input[type="email"]').value;
+    const password = this.signupForm.querySelectorAll('input[type="password"]')[0].value;
+    const confirmPassword = this.signupForm.querySelectorAll('input[type="password"]')[1].value;
+
+    if (password !== confirmPassword) {
+      showToast("Passwords do not match!", 'error');
+      return;
+    }
+
+    createUserWithEmailAndPassword(auth, email, password)
+      .then(() => {
+        this.authModal.style.display = 'none';
+        showToast("Signed up!");
+      })
+      .catch(err => showToast(err.message, 'error'));
+  }
+
+  logout() {
+    signOut(auth)
+      .then(() => showToast("Logged out!"))
+      .catch(err => showToast(err.message, 'error'));
+  }
+
+  checkAuthForCheckout() {
+    const user = auth.currentUser;
+    if (!user) {
+      showToast("Please login to checkout", 'error');
+      if (this.authModal) this.authModal.style.display = 'flex';
+      return false;
+    }
+    return true;
+  }
+}
+
+export default Auth;
