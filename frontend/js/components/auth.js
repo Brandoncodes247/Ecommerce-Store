@@ -7,7 +7,7 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-import { showToast } from './utils/ui.js'; // or adjust the path if different
+import { showToast } from '/js/utils/ui.js';
 
 class Auth {
   constructor() {
@@ -16,8 +16,11 @@ class Auth {
     this.loginForm = document.getElementById('login-form');
     this.signupForm = document.getElementById('signup-form');
 
-    // Auth state listener
-    onAuthStateChanged(auth, (user) => this.updateAuthButton(user));
+    // Initialize auth state listener
+    onAuthStateChanged(auth, (user) => {
+      this.updateAuthButton(user);
+      this.handleAuthStateChange(user);
+    });
 
     if (this.loginForm) {
       this.loginForm.addEventListener('submit', (e) => this.handleLogin(e));
@@ -25,6 +28,33 @@ class Auth {
 
     if (this.signupForm) {
       this.signupForm.addEventListener('submit', (e) => this.handleSignup(e));
+    }
+
+    // Close modal handlers
+    document.getElementById('close-auth-modal')?.addEventListener('click', () => {
+      this.authModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === this.authModal) {
+        this.authModal.style.display = 'none';
+      }
+    });
+  }
+
+  handleAuthStateChange(user) {
+    if (user) {
+      localStorage.setItem('authUser', JSON.stringify({
+        uid: user.uid,
+        email: user.email,
+        displayName: user.displayName
+      }));
+      // Close auth modal if open
+      if (this.authModal) {
+        this.authModal.style.display = 'none';
+      }
+    } else {
+      localStorage.removeItem('authUser');
     }
   }
 
@@ -35,10 +65,21 @@ class Auth {
         this.loginBtn.onclick = () => this.logout();
       } else {
         this.loginBtn.textContent = 'Login / Sign Up';
-        this.loginBtn.onclick = () => {
-          if (this.authModal) this.authModal.style.display = 'flex';
-        };
+        this.loginBtn.onclick = () => this.showAuthModal();
       }
+    }
+  }
+
+  showAuthModal(activeTab = 'login') {
+    if (this.authModal) {
+      this.authModal.style.display = 'flex';
+      document.getElementById('login-form').style.display = activeTab === 'login' ? 'block' : 'none';
+      document.getElementById('signup-form').style.display = activeTab === 'signup' ? 'block' : 'none';
+      
+      // Update active tab UI
+      document.querySelectorAll('.auth-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === activeTab);
+      });
     }
   }
 
@@ -49,8 +90,7 @@ class Auth {
 
     signInWithEmailAndPassword(auth, email, password)
       .then(() => {
-        this.authModal.style.display = 'none';
-        showToast("Logged in!");
+        showToast("Logged in successfully!");
       })
       .catch(err => showToast(err.message, 'error'));
   }
@@ -69,27 +109,32 @@ class Auth {
 
     createUserWithEmailAndPassword(auth, email, password)
       .then(() => {
-        this.authModal.style.display = 'none';
-        showToast("Signed up!");
+        showToast("Account created successfully!");
       })
       .catch(err => showToast(err.message, 'error'));
   }
 
   logout() {
     signOut(auth)
-      .then(() => showToast("Logged out!"))
+      .then(() => showToast("Logged out successfully!"))
       .catch(err => showToast(err.message, 'error'));
   }
 
-  checkAuthForCheckout() {
-    const user = auth.currentUser;
-    if (!user) {
-      showToast("Please login to checkout", 'error');
-      if (this.authModal) this.authModal.style.display = 'flex';
-      return false;
+  checkAuth(showModal = false) {
+    const user = auth.currentUser || JSON.parse(localStorage.getItem('authUser') || 'null');
+    if (!user && showModal) {
+      this.showAuthModal();
     }
-    return true;
+    return !!user;
   }
 }
 
-export default Auth;
+// Create singleton instance
+const authInstance = new Auth();
+
+// Export functions for direct usage
+export function checkAuth(showModal = false) {
+  return authInstance.checkAuth(showModal);
+}
+
+export default authInstance;

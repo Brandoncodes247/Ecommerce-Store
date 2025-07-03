@@ -1,5 +1,5 @@
-import { getCart, setCart, updateCartCount } from '../utils/storage.js';
-import { showToast } from '../utils/ui.js';
+import { getCart, setCart, updateCartCount } from '/js/utils/storage.js';
+import { showToast } from '/js/utils/ui.js';
 
 export function renderCart() {
   const cartItems = document.getElementById('cart-items');
@@ -64,6 +64,24 @@ export function updateQty(id, delta) {
     renderCart();
     updateCartCount();
     showToast('Cart updated');
+  }
+  const checkoutBtn = document.getElementById('checkout-btn');
+  if (checkoutBtn) {
+    checkoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const cart = getCart();
+      if (cart.length === 0) {
+        showToast('Your cart is empty!', 'error');
+        return;
+      }
+      
+      // Check auth and show modal if needed
+      if (!checkAuth(true)) {
+        showToast('Please login or sign up to checkout', 'info');
+      } else {
+        window.location.href = 'checkout.html';
+      }
+    });
   }
 }
 

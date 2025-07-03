@@ -2,30 +2,176 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Thank You</title>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --success: #10b981;
+      --text: #1f2937;
+      --text-light: #6b7280;
+      --bg: #f9fafb;
+      --card-bg: #ffffff;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      margin: 0;
+      padding: 1rem;
+      line-height: 1.5;
+    }
+    
+    .thank-you-container {
+      max-width: 600px;
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      padding: 2.5rem;
+      text-align: center;
+      margin: 2rem auto;
+    }
+    
+    .thank-you-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      color: var(--success);
+    }
+    
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+    
+    .order-summary {
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      text-align: left;
+    }
+    
+    .order-meta {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .order-meta p {
+      margin: 0.5rem 0;
+      font-size: 0.95rem;
+    }
+    
+    .order-meta span {
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    .ordered-products {
+      margin-top: 1.5rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .cart-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+    
+    .cart-item img {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: 4px;
+    }
+    
+    .cart-item-details {
+      flex: 1;
+    }
+    
+    .cart-item h3 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+    
+    .cart-item p {
+      margin: 0.25rem 0;
+      font-size: 0.875rem;
+      color: var(--text-light);
+    }
+    
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--primary);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background-color 0.2s;
+      margin-top: 1.5rem;
+    }
+    
+    .back-btn:hover {
+      background-color: var(--primary-hover);
+    }
+    
+    @media (max-width: 640px) {
+      .thank-you-container {
+        padding: 1.5rem;
+      }
+      
+      .order-meta {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>🎉 Thank You for Your Purchase!</h1>
-    <nav>
-      <a href="index.html" class="primary-btn">← Back to Shop</a>
-    </nav>
-  </header>
-
-  <main>
-    <section class="thank-you">
-      <p>Your order has been placed.</p>
-      <p id="order-status">Checking your order status...</p>
-      <p>Date: <span id="order-date">...</span></p>
-      <p>Total: <span id="order-total">...</span></p>
-
-      <h2>Ordered Items</h2>
-      <div id="ordered-products" class="cart-items-summary"></div>
-    </section>
-  </main>
-
-  <footer>&copy; 2025 My E-Commerce Store</footer>
+  <div class="thank-you-container">
+    <div class="thank-you-icon">✓</div>
+    <h1>Thank You for Your Order!</h1>
+    <p>Your purchase has been confirmed. We've sent you an email with your order details.</p>
+    
+    <div class="order-summary">
+      <div class="order-meta">
+        <div>
+          <p>Order Status: <span id="order-status">Processing</span></p>
+          <p>Order Number: <span id="order-id">...</span></p>
+        </div>
+        <div>
+          <p>Date: <span id="order-date">...</span></p>
+          <p>Total: <span id="order-total">...</span></p>
+        </div>
+      </div>
+      
+      <h3>Order Summary</h3>
+      <div id="ordered-products" class="ordered-products"></div>
+    </div>
+    
+    <a href="index.html" class="back-btn">Continue Shopping</a>
+  </div>
 
   <script type="module">
     import { loadProducts, productMap } from './js/data/productCache.js';
@@ -35,38 +181,42 @@
 
     async function renderOrderDetails() {
       if (!orderId) {
-        document.getElementById('order-status').innerText = 'Order ID not found.';
+        document.getElementById('order-status').innerText = 'Not found';
         return;
       }
 
       try {
-        await loadProducts(); // fetch product data
+        await loadProducts();
+        document.getElementById('order-id').innerText = orderId;
 
         const res = await fetch(`http://localhost:3001/api/order/${orderId}`);
+        if (!res.ok) throw new Error('Order not found');
+        
         const data = await res.json();
 
-        document.getElementById('order-status').innerText = `Order Status: ${data.status}`;
+        document.getElementById('order-status').innerText = data.status || 'Processing';
         document.getElementById('order-date').innerText = new Date(data.createdAt).toLocaleString();
         document.getElementById('order-total').innerText = `KES ${Number(data.totalAmount).toLocaleString()}`;
 
         const container = document.getElementById('ordered-products');
         container.innerHTML = data.items.map(item => {
           const product = productMap.get(item.productId);
-          const imageUrl = product?.imageUrl?.replace('http://localhost:3000', 'http://localhost:3002') || '';
+          const imageUrl = product?.imageUrl?.replace('http://localhost:3000', 'http://localhost:3002') || './images/placeholder-product.png';
           return `
             <div class="cart-item">
-              <img src="${imageUrl}" alt="${product?.name || 'Product'}" />
+              <img src="${imageUrl}" alt="${product?.name || 'Product'}" 
+                   onerror="this.src='./images/placeholder-product.png'">
               <div class="cart-item-details">
                 <h3>${product?.name || 'Unknown Product'}</h3>
                 <p>Quantity: ${item.quantity}</p>
-                <p>Price: KES ${item.price}</p>
+                <p>Price: KES ${Number(item.price).toLocaleString()}</p>
               </div>
             </div>
           `;
-        }).join('');
+        }).join('') || '<p>No items found</p>';
       } catch (err) {
-        console.error(err);
-        document.getElementById('order-status').innerText = 'Error retrieving order.';
+        console.error('Order fetch error:', err);
+        document.getElementById('order-status').innerText = 'Error loading details';
       }
     }
 
