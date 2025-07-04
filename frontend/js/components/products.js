@@ -83,7 +83,7 @@ export async function renderProducts() {
     });
 
   } catch (error) {
-    console.error('❌ Failed to load products:', error);
+    console.error('Failed to load products:', error);
     container.innerHTML = '<p style="color:red;">Failed to load products.</p>';
   }
 }
@@ -103,7 +103,7 @@ function addToCart(productId, qty = 1) {
   const existingQty = existingIndex > -1 ? cart[existingIndex].qty : 0;
 
   if (existingQty + qty > available) {
-    showToast('❌ Not enough stock available');
+    showToast('Not enough stock available');
     return;
   }
 

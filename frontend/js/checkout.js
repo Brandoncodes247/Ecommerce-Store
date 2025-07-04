@@ -231,9 +231,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
       if (response.ok) {
         const result = await response.json();
-        showToast('✅ Order placed successfully!', 'success');
+        showToast('Order placed successfully!', 'success');
 
-        // ✅ Save total in localStorage
+        // Save total in localStorage
         localStorage.setItem('lastOrderTotal', total);
         localStorage.setItem('lastOrderId', result.id);
 
@@ -245,11 +245,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
       } else {
         const errorData = await response.json().catch(() => ({}));
-        showToast(`❌ Order failed: ${errorData.message || 'Please try again'}`, 'error');
+        showToast(` Order failed: ${errorData.message || 'Please try again'}`, 'error');
       }
     } catch (err) {
       console.error('Order error:', err);
-      showToast('❌ Network error during order processing', 'error');
+      showToast('Network error during order processing', 'error');
     }
   });
 });

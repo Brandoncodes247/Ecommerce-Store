@@ -27,7 +27,7 @@ window.app = {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🛠️ Initializing application...');
 
-  // 👉 Product Page
+  // Product Page
   const productList = document.getElementById('product-list');
   if (productList) {
     console.log('📦 Setting up product list...');
@@ -35,18 +35,18 @@ document.addEventListener('DOMContentLoaded', () => {
     setupSearch();
   }
 
-  // 🛒 Cart
+  // Cart
   updateCartCount();
   if (document.getElementById('cart-items')) {
     console.log('🛒 Initializing cart...');
     renderCart();
   }
 
-  // 🌙 Dark Mode + Back to Top
+  // Dark Mode + Back to Top
   setupDarkModeToggle();
   setupBackToTop();
 
-  // ❌ Close Product Modal
+  //  Close Product Modal
   const closeModal = document.getElementById('close-modal');
   const modal = document.getElementById('product-modal');
   if (closeModal && modal) {
@@ -56,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  // ❌ Close Auth Modal
+  //  Close Auth Modal
   const closeAuthModal = document.getElementById('close-auth-modal');
   const authModal = document.getElementById('auth-modal');
   if (closeAuthModal && authModal) {
