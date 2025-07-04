@@ -196,7 +196,9 @@
 
         document.getElementById('order-status').innerText = data.status || 'Processing';
         document.getElementById('order-date').innerText = new Date(data.createdAt).toLocaleString();
-        document.getElementById('order-total').innerText = `KES ${Number(data.totalAmount).toLocaleString()}`;
+        const totalAmount = data.totalAmount || localStorage.getItem('lastOrderTotal') || 0;
+        document.getElementById('order-total').innerText = `KES ${Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+
 
         const container = document.getElementById('ordered-products');
         container.innerHTML = data.items.map(item => {

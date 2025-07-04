@@ -233,6 +233,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const result = await response.json();
         showToast('✅ Order placed successfully!', 'success');
         localStorage.setItem('lastOrderId', result.id);
+        localStorage.setItem('lastOrderTotal', total); // save total
         setCart([]);
         updateCartCount();
         setTimeout(() => {
