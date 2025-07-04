@@ -232,13 +232,17 @@ document.addEventListener('DOMContentLoaded', function () {
       if (response.ok) {
         const result = await response.json();
         showToast('✅ Order placed successfully!', 'success');
+
+        // ✅ Save total in localStorage
+        localStorage.setItem('lastOrderTotal', total);
         localStorage.setItem('lastOrderId', result.id);
-        localStorage.setItem('lastOrderTotal', total); // save total
+
         setCart([]);
         updateCartCount();
         setTimeout(() => {
           window.location.href = 'thankyou.html';
-        }, 2000);
+      }, 2000);
+
       } else {
         const errorData = await response.json().catch(() => ({}));
         showToast(`❌ Order failed: ${errorData.message || 'Please try again'}`, 'error');

@@ -196,8 +196,19 @@
 
         document.getElementById('order-status').innerText = data.status || 'Processing';
         document.getElementById('order-date').innerText = new Date(data.createdAt).toLocaleString();
-        const totalAmount = data.totalAmount || localStorage.getItem('lastOrderTotal') || 0;
-        document.getElementById('order-total').innerText = `KES ${Number(totalAmount).toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+        let totalAmount = data.totalAmount;
+
+        // Fallback to localStorage if totalAmount is undefined or 0
+        if (!totalAmount || Number(totalAmount) <= 0) {
+          totalAmount = localStorage.getItem('lastOrderTotal') || 0;
+        }
+
+        document.getElementById('order-total').innerText =
+          `KES ${Number(totalAmount).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}`;
+
 
 
         const container = document.getElementById('ordered-products');
@@ -218,7 +229,13 @@
         }).join('') || '<p>No items found</p>';
       } catch (err) {
         console.error('Order fetch error:', err);
-        document.getElementById('order-status').innerText = 'Error loading details';
+        document.getElementById('order-status').innerText = 'Order received (no details)';
+        const fallbackTotal = localStorage.getItem('lastOrderTotal') || 0;
+        document.getElementById('order-total').innerText =
+          `KES ${Number(fallbackTotal).toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          })}`;
       }
     }
 
